@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinutosApp - Marketplace</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --top-navbar-height: 60px;
+        }
+        
+        body {
+            padding-top: var(--top-navbar-height);
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar Estilos */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1030;
+            transition: all 0.3s;
+            overflow-y: auto;
+        }
+        
+        .sidebar-collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+        
+        .sidebar-collapsed .nav-link-text,
+        .sidebar-collapsed .sidebar-brand-text,
+        .sidebar-collapsed .search-box {
+            display: none !important;
+        }
+        
+        .sidebar-collapsed .nav-link {
+            justify-content: center;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        .sidebar-collapsed + .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+        
+        /* Top Navbar */
+        .top-navbar {
+            height: var(--top-navbar-height);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 1020;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-collapsed + .main-content .top-navbar {
+            left: var(--sidebar-collapsed-width);
+        }
+        
+        /* Mobile Adaptations */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1040;
+            }
+            
+            .sidebar-mobile-show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+            }
+            
+            .top-navbar {
+                left: 0 !important;
+            }
+            
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+        
+        /* Cards de Perfiles */
+        .profile-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+            height: 100%;
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .profile-img {
+            height: 120px;
+            object-fit: cover;
+        }
+        
+        .rating {
+            color: #FFD700;
+        }
+        
+        .price-badge {
+            font-size: 1.1rem;
+        }
+        
+        /* Badges de categorías */
+        .category-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar bg-dark text-white d-flex flex-column p-3">
+        <!-- Brand & Toggle -->
+        <div class="sidebar-header d-flex justify-content-between align-items-center mb-3">
+            <a href="#" class="sidebar-brand text-white text-decoration-none d-flex align-items-center">
+                <i class="fas fa-clock me-3"></i>
+                <span class="sidebar-brand-text fs-4">MinutosApp</span>
+            </a>
+            <button class="btn btn-sm btn-outline-light d-none d-lg-inline-block" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu Button (solo visible en móvil) -->
+        <button class="btn btn-dark d-lg-none mb-3 mobile-menu-btn" id="mobileMenuButton">
+            <i class="fas fa-bars me-2"></i> Menú
+        </button>
+        
+        <!-- Search Bar -->
+        <div class="search-box mb-3">
+            <div class="input-group">
+                <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="Buscar...">
+                <button class="btn btn-outline-light" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        
+        <hr class="my-2">
+        
+        <!-- Main Menu -->
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white active">
+                    <i class="fas fa-home me-3"></i>
+                    <span class="nav-link-text">Inicio</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-shopping-cart me-3"></i>
+                    <span class="nav-link-text">Comprar Minutos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-hand-holding-usd me-3"></i>
+                    <span class="nav-link-text">Vender Minutos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-exchange-alt me-3"></i>
+                    <span class="nav-link-text">Transacciones</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-wallet me-3"></i>
+                    <span class="nav-link-text">Mi Billetera</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-calendar-alt me-3"></i>
+                    <span class="nav-link-text">Agenda</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-chart-line me-3"></i>
+                    <span class="nav-link-text">Estadísticas</span>
+                </a>
+            </li>
+        </ul>
+        
+        <hr class="my-2">
+        
+        <!-- Configuración -->
+        <ul class="nav nav-pills flex-column">
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-cog me-3"></i>
+                    <span class="nav-link-text">Configuración</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-question-circle me-3"></i>
+                    <span class="nav-link-text">Ayuda</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <nav class="navbar navbar-expand navbar-light bg-light top-navbar shadow-sm">
+            <div class="container-fluid">
+                <!-- Mobile Menu Toggle -->
+                <button class="btn btn-light d-lg-none me-2" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <!-- Breadcrumb -->
+                <div class="d-none d-md-flex">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Marketplace</li>
+                        </ol>
+                    </nav>
+                </div>
+                
+                <!-- Top Right Icons -->
+                <div class="d-flex ms-auto">
+                    <!-- Search (Mobile) -->
+                    <div class="dropdown d-lg-none me-2">
+                        <button class="btn btn-light" data-bs-toggle="dropdown">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-2" style="min-width: 300px;">
+                            <form class="d-flex">
+                                <input class="form-control me-2" type="search" placeholder="Buscar...">
+                                <button class="btn btn-primary" type="submit">Ir</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Messages -->
+                    <div class="dropdown mx-2">
+                        <button class="btn btn-light position-relative" data-bs-toggle="dropdown">
+                            <i class="fas fa-envelope"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                3
+                            </span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">Mensajes (3)</h6></li>
+                            <li>
+                                <a class="dropdown-item d-flex" href="#">
+                                    <div class="flex-shrink-0">
+                                        <img src="https://randomuser.me/api/portraits/women/12.jpg" width="40" class="rounded-circle">
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="fw-bold">María González</div>
+                                        <div class="small text-truncate">¿Disponible para acompañarme al médico?</div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex" href="#">
+                                    <div class="flex-shrink-0">
+                                        <img src="https://randomuser.me/api/portraits/men/32.jpg" width="40" class="rounded-circle">
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="fw-bold">Carlos Mendoza</div>
+                                        <div class="small text-truncate">Confirmación de cita mañana</div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center" href="#">Ver todos</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Notifications -->
+                    <div class="dropdown mx-2">
+                        <button class="btn btn-light position-relative" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                                5
+                            </span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">Notificaciones (5)</h6></li>
+                            <li>
+                                <a class="dropdown-item d-flex" href="#">
+                                    <div class="flex-shrink-0 text-primary">
+                                        <i class="fas fa-coins"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div>Nueva oferta cerca de ti</div>
+                                        <small class="text-muted">Hace 15 min</small>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex" href="#">
+                                    <div class="flex-shrink-0 text-success">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div>Pago recibido</div>
+                                        <small class="text-muted">Hace 2 horas</small>
+                                    </div>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center" href="#">Ver todas</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- User Profile -->
+                    <div class="dropdown ms-2">
+                        <button class="btn btn-light dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
+                            <img src="https://randomuser.me/api/portraits/men/41.jpg" width="32" class="rounded-circle me-2">
+                            <span class="d-none d-md-inline">Juan Pérez</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Perfil</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Page Content -->
+        <div class="container-fluid p-3 p-md-4">
+            <!-- Filtros -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="d-flex flex-wrap align-items-center">
+                                <h5 class="mb-0 me-3">Filtrar por:</h5>
+                                <select class="form-select form-select-sm w-auto me-3 mb-2 mb-md-0">
+                                    <option selected>Categoría</option>
+                                    <option>Acompañamiento</option>
+                                    <option>Ayuda</option>
+                                    <option>Ambos</option>
+                                </select>
+                                <select class="form-select form-select-sm w-auto me-3 mb-2 mb-md-0">
+                                    <option selected>Ubicación</option>
+                                    <option>Centro</option>
+                                    <option>Norte</option>
+                                    <option>Sur</option>
+                                </select>
+                                <select class="form-select form-select-sm w-auto me-3 mb-2 mb-md-0">
+                                    <option selected>Precio</option>
+                                    <option>Más económico</option>
+                                    <option>Más caro</option>
+                                </select>
+                                <button class="btn btn-primary btn-sm me-2 mb-2 mb-md-0">
+                                    <i class="fas fa-filter me-1"></i> Aplicar
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0">
+                                    <i class="fas fa-sync-alt me-1"></i> Reiniciar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de Anuncios -->
+            <h2 class="mb-4">Anuncios destacados</h2>
+            
+            <!-- Pestañas de Compra/Venta -->
+            <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="buy-tab" data-bs-toggle="tab" data-bs-target="#buy-tab-pane" type="button" role="tab">
+                        <i class="fas fa-shopping-cart me-2"></i>Comprar Minutos
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sell-tab" data-bs-toggle="tab" data-bs-target="#sell-tab-pane" type="button" role="tab">
+                        <i class="fas fa-hand-holding-usd me-2"></i>Vender Minutos
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="myTabContent">
+                <!-- Pestaña de Compra -->
+                <div class="tab-pane fade show active" id="buy-tab-pane" role="tabpanel">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+                        <!-- Anuncio 1 -->
+                        <div class="col">
+                            <div class="card profile-card h-100 shadow-sm">
+                                <span class="badge bg-success category-badge">Acompañamiento</span>
+                                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="card-img-top profile-img" alt="Perfil">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Ana López</h5>
+                                        <div>
+                                            <span class="rating">
+                                                <i class="fas fa-star"></i> 4.8
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i> Colonia Centro, 2km de ti
+                                    </p>
+                                    <p class="card-text">Ofrezco compañía para citas médicas, eventos sociales y paseos.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="price-badge text-success">$7.50/min</span>
+                                        <button class="btn btn-sm btn-outline-primary">Ver perfil</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Anuncio 2 -->
+                        <div class="col">
+                            <div class="card profile-card h-100 shadow-sm">
+                                <span class="badge bg-primary category-badge">Ayuda</span>
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="card-img-top profile-img" alt="Perfil">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Carlos Ruiz</h5>
+                                        <div>
+                                            <span class="rating">
+                                                <i class="fas fa-star"></i> 4.5
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i> Colonia Del Valle, 5km de ti
+                                    </p>
+                                    <p class="card-text">Ayuda con trámites, mudanzas y reparaciones menores en hogar.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="price-badge text-success">$9.00/min</span>
+                                        <button class="btn btn-sm btn-outline-primary">Ver perfil</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Anuncio 3 -->
+                        <div class="col">
+                            <div class="card profile-card h-100 shadow-sm">
+                                <span class="badge bg-warning text-dark category-badge">Ambos</span>
+                                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="card-img-top profile-img" alt="Perfil">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">María Fernández</h5>
+                                        <div>
+                                            <span class="rating">
+                                                <i class="fas fa-star"></i> 4.9
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i> Colonia Roma, 3km de ti
+                                    </p>
+                                    <p class="card-text">Acompañamiento y ayuda para personas mayores. Disponibilidad mañanas.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="price-badge text-success">$8.25/min</span>
+                                        <button class="btn btn-sm btn-outline-primary">Ver perfil</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Anuncio 4 -->
+                        <div class="col">
+                            <div class="card profile-card h-100 shadow-sm">
+                                <span class="badge bg-success category-badge">Acompañamiento</span>
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="card-img-top profile-img" alt="Perfil">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Luisa Martínez</h5>
+                                        <div>
+                                            <span class="rating">
+                                                <i class="fas fa-star"></i> 4.7
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i> Colonia Nápoles, 4km de ti
+                                    </p>
+                                    <p class="card-text">Compañía para eventos sociales, cenas y actividades culturales.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="price-badge text-success">$10.00/min</span>
+                                        <button class="btn btn-sm btn-outline-primary">Ver perfil</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pestaña de Venta -->
+                <div class="tab-pane fade" id="sell-tab-pane" role="tabpanel">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+                        <!-- Anuncio 1 -->
+                        <div class="col">
+                            <div class="card profile-card h-100 shadow-sm">
+                                <span class="badge bg-primary category-badge">Ayuda</span>
+                                <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="card-img-top profile-img" alt="Perfil">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Roberto Sánchez</h5>
+                                        <div>
+                                            <span class="rating">
+                                                <i class="fas fa-star"></i> 4.6
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i> Colonia Condesa, 1km de ti
+                                    </p>
+                                    <p class="card-text">Ofrezco ayuda con reparaciones del hogar, instalaciones y mantenimiento.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="price-badge text-success">$12.00/min</span>
+                                        <button class="btn btn-sm btn-outline-primary">Ver perfil</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Anuncio 2 -->
+                        <div class="col">
+                            <div class="card profile-card h-100 shadow-sm">
+                                <span class="badge bg-warning text-dark category-badge">Ambos</span>
+                                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="card-img-top profile-img" alt="Perfil">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Sofía Ramírez</h5>
+                                        <div>
+                                            <span class="rating">
+                                                <i class="fas fa-star"></i> 4.9
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i> Colonia Juárez, 2km de ti
+                                    </p>
+                                    <p class="card-text">Acompañamiento profesional y ayuda con organización de eventos.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="price-badge text-success">$15.00/min</span>
+                                        <button class="btn btn-sm btn-outline-primary">Ver perfil</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Anuncio 3 -->
+                        <div class="col">
+                            <div class="card profile-card h-100 shadow-sm">
+                                <span class="badge bg-success category-badge">Acompañamiento</span>
+                                <img src="https://images.unsplash.com/photo-1554151228-14d9def656e4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="card-img-top profile-img" alt="Perfil">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Elena Castro</h5>
+                                        <div>
+                                            <span class="rating">
+                                                <i class="fas fa-star"></i> 4.8
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i> Colonia Polanco, 3km de ti
+                                    </p>
+                                    <p class="card-text">Compañía para eventos sociales, citas y viajes locales.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="price-badge text-success">$20.00/min</span>
+                                        <button class="btn btn-sm btn-outline-primary">Ver perfil</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Anuncio 4 -->
+                        <div class="col">
+                            <div class="card profile-card h-100 shadow-sm">
+                                <span class="badge bg-primary category-badge">Ayuda</span>
+                                <img src="https://images.unsplash.com/photo-1504593811423-6dd665756598?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="card-img-top profile-img" alt="Perfil">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">Miguel Ángel</h5>
+                                        <div>
+                                            <span class="rating">
+                                                <i class="fas fa-star"></i> 4.7
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i> Colonia San Rafael, 4km de ti
+                                    </p>
+                                    <p class="card-text">Ayuda con mudanzas, transporte de muebles y carga pesada.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="price-badge text-success">$18.00/min</span>
+                                        <button class="btn btn-sm btn-outline-primary">Ver perfil</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle sidebar
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('sidebar-collapsed');
+        });
+        
+        // Mobile menu toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('sidebar-mobile-show');
+        });
+        
+        document.getElementById('mobileMenuButton').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('sidebar-mobile-show');
+        });
+        
+        // Auto-close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.querySelector('.sidebar');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnMobileMenuButton = event.target === document.getElementById('mobileMenuToggle') || 
+                                             document.getElementById('mobileMenuToggle').contains(event.target);
+            
+            if (!isClickInsideSidebar && !isClickOnMobileMenuButton && window.innerWidth <= 992) {
+                sidebar.classList.remove('sidebar-mobile-show');
+            }
+        });
+        
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    </script>
+</body>
+</html>

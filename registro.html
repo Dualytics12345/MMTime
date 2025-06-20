@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Completo</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS (para el mapa) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .registration-container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .section-title i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        #map {
+            height: 250px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+        .file-upload {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        .file-upload:hover {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+        .file-upload i {
+            font-size: 2rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        .file-upload small {
+            display: block;
+            color: #6c757d;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .checkbox-option {
+            flex: 1 0 200px;
+        }
+        .availability-calendar {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 150px;
+        }
+        @media (max-width: 768px) {
+            .checkbox-option {
+                flex: 1 0 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="registration-container">
+            <h2 class="text-center mb-4">Crear Registro</h2>
+           <div class="form-section border rounded p-4">
+    <h4 class="section-title mb-4"><i class="fas fa-shield-alt"></i> Verificar tu identidad</h4>
+ 
+            <!-- Información Personal -->
+            <div class="form-section">
+                <h4 class="section-title"><i class="fas fa-user"></i> Información Personal</h4>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="nombre" class="form-label">Nombre(s)</label>
+                        <input type="text" class="form-control" id="nombre" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="apellidoPaterno" class="form-label">Apellido Paterno</label>
+                        <input type="text" class="form-control" id="apellidoPaterno" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="apellidoMaterno" class="form-label">Apellido Materno</label>
+                        <input type="text" class="form-control" id="apellidoMaterno">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="direccion" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="celular" class="form-label">Número de Celular</label>
+                        <input type="tel" class="form-control" id="celular" required>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Género</label>
+                        <select class="form-select">
+                            <option selected disabled>Selecciona una opción</option>
+                            <option value="masculino">Masculino</option>
+                            <option value="femenino">Femenino</option>
+                            <option value="no-binario">No binario</option>
+                            <option value="prefiero-no-decir">Prefiero no decir</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Rango de Edad</label>
+                        <select class="form-select">
+                            <option selected disabled>Selecciona tu rango de edad</option>
+                            <option value="18-25">18-25 años</option>
+                            <option value="26-30">26-30 años</option>
+                            <option value="31-35">31-35 años</option>
+                            <option value="36-40">36-40 años</option>
+                            <option value="41-45">41-45 años</option>
+                            <option value="45-50">45-50 años</option>
+                            <option value="50+">50+ años</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Validación de Ubicación -->
+            <div class="form-section">
+                <h4 class="section-title"><i class="fas fa-map-marker-alt"></i> Validación de Ubicación</h4>
+                <div class="mb-3">
+                    <label for="map" class="form-label">Confirma tu ubicación en el mapa</label>
+                    <div id="map"></div>
+                    <small class="text-muted">Arrastra el marcador para ajustar tu ubicación exacta</small>
+                </div>
+                <div class="mb-3">
+                    <label for="cobertura" class="form-label">Área de cobertura (localidades a las que puede llegar presencialmente)</label>
+                    <textarea class="form-control" id="cobertura" rows="2" placeholder="Ej: Colonia Centro, Colonia Del Valle, Colonia Roma"></textarea>
+                </div>
+            </div>
+            
+            <!-- Documentación -->
+            <div class="form-section">
+                <h4 class="section-title"><i class="fas fa-id-card"></i> Documentación Requerida</h4>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="file-upload" onclick="document.getElementById('ineFrente').click()">
+                            <i class="far fa-id-card"></i>
+                            <div>INE (Frente)</div>
+                            <small>Formatos: JPG, PNG (Max. 5MB)</small>
+                            <input type="file" id="ineFrente" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="file-upload" onclick="document.getElementById('ineReverso').click()">
+                            <i class="far fa-id-card"></i>
+                            <div>INE (Reverso)</div>
+                            <small>Formatos: JPG, PNG (Max. 5MB)</small>
+                            <input type="file" id="ineReverso" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="file-upload" onclick="document.getElementById('fotoRostro').click()">
+                            <i class="far fa-user"></i>
+                            <div>Foto frontal del rostro</div>
+                            <small>Formatos: JPG, PNG (Max. 5MB)</small>
+                            <input type="file" id="fotoRostro" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ¿Qué deseas hacer? -->
+<div class="form-section">
+    <h4 class="section-title mb-4"><i class="fas fa-question-circle"></i> ¿Qué deseas hacer?</h4>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="interaction-card h-100">
+                <input type="radio" class="btn-check" name="accion" id="comprarMinutos" autocomplete="off">
+                <label class="card h-100 interaction-option" for="comprarMinutos">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shopping-cart interaction-icon"></i>
+                        <h5 class="card-title mt-3">Comprar minutos</h5>
+                        <p class="card-text text-muted">Quiero adquirir minutos disponibles</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="interaction-card h-100">
+                <input type="radio" class="btn-check" name="accion" id="venderMinutos" autocomplete="off">
+                <label class="card h-100 interaction-option" for="venderMinutos">
+                    <div class="card-body text-center">
+                        <i class="fas fa-hand-holding-usd interaction-icon"></i>
+                        <h5 class="card-title mt-3">Vender minutos</h5>
+                        <p class="card-text text-muted">Tengo minutos que quiero ofrecer</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="interaction-card h-100">
+                <input type="radio" class="btn-check" name="accion" id="ambosMinutos" autocomplete="off">
+                <label class="card h-100 interaction-option" for="ambosMinutos">
+                    <div class="card-body text-center">
+                        <i class="fas fa-exchange-alt interaction-icon"></i>
+                        <h5 class="card-title mt-3">Ambos</h5>
+                        <p class="card-text text-muted">Quiero comprar y vender minutos</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+             </div>
+            <!-- Disponibilidad -->
+<div id="seccionVenderMinutos" class="form-section mt-4">
+   <h4 class="section-title text-center"><i class="fas fa-hand-holding-usd"></i> Vender Minutos</h4>
+
+           <!-- Servicio de Minutos -->
+           <div class="form-section">
+    <h4 class="section-title"><i class="fas fa-clock"></i> Servicio de Minutos</h4>
+    
+    <div class="mb-3">
+        <label class="form-label">¿Qué tipo de servicio ofreces?</label>
+        <div class="checkbox-group">
+            <div class="form-check checkbox-option">
+                <input class="form-check-input" type="checkbox" id="virtuales">
+                <label class="form-check-label" for="virtuales">Virtuales</label>
+            </div>
+            <div class="form-check checkbox-option">
+                <input class="form-check-input" type="checkbox" id="presenciales">
+                <label class="form-check-label" for="presenciales">Presenciales</label>
+            </div>
+            <div class="form-check checkbox-option">
+                <input class="form-check-input" type="checkbox" id="ambos">
+                <label class="form-check-label" for="ambos">Ambos</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campo: Precio por minuto de acompañamiento -->
+    <div class="mb-3">
+        <label for="precioAcompanamiento" class="form-label">Precio de mi minuto de acompañamiento:</label>
+        <div class="input-group">
+            <span class="input-group-text">$</span>
+            <input type="number" class="form-control" id="precioAcompanamiento" name="precioAcompanamiento" placeholder="Ej. 7.00" step="0.01" min="0">
+        </div>
+    </div>
+
+    <!-- Campo: Precio por minuto de ayuda -->
+    <div class="mb-3">
+        <label for="precioAyuda" class="form-label">Precio por mi minuto de ayuda:</label>
+        <div class="input-group">
+            <span class="input-group-text">$</span>
+            <input type="number" class="form-control" id="precioAyuda" name="precioAyuda" placeholder="Ej. 7.00" step="0.01" min="0">
+        </div>
+    </div>
+</div>
+
+
+
+         <div class="form-section">
+    <h4 class="section-title"><i class="far fa-calendar-alt"></i> Disponibilidad</h4>
+    <div class="mb-3">
+        <label class="form-label mb-3">Configura tus horarios disponibles</label>
+        
+        <!-- Selector de días con estilo mejorado -->
+        <div class="days-selector mb-4">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <input type="checkbox" class="btn-check" id="lunes" autocomplete="off">
+                <label class="btn btn-outline-primary day-btn" for="lunes">L</label>
+                
+                <input type="checkbox" class="btn-check" id="martes" autocomplete="off">
+                <label class="btn btn-outline-primary day-btn" for="martes">M</label>
+                
+                <input type="checkbox" class="btn-check" id="miercoles" autocomplete="off">
+                <label class="btn btn-outline-primary day-btn" for="miercoles">M</label>
+                
+                <input type="checkbox" class="btn-check" id="jueves" autocomplete="off">
+                <label class="btn btn-outline-primary day-btn" for="jueves">J</label>
+                
+                <input type="checkbox" class="btn-check" id="viernes" autocomplete="off">
+                <label class="btn btn-outline-primary day-btn" for="viernes">V</label>
+                
+                <input type="checkbox" class="btn-check" id="sabado" autocomplete="off">
+                <label class="btn btn-outline-primary day-btn" for="sabado">S</label>
+                
+                <input type="checkbox" class="btn-check" id="domingo" autocomplete="off">
+                <label class="btn btn-outline-primary day-btn" for="domingo">D</label>
+            </div>
+        </div>
+        
+        <!-- Selector de horarios -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="horaInicio" class="form-label">Hora de inicio</label>
+                <div class="input-group">
+                    <select class="form-select" id="horaInicio">
+                        <option value="" disabled selected>Seleccione</option>
+                        <option value="6:00">6:00 AM</option>
+                        <option value="7:00">7:00 AM</option>
+                        <option value="8:00">8:00 AM</option>
+                        <option value="9:00">9:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="13:00">1:00 PM</option>
+                        <option value="14:00">2:00 PM</option>
+                        <option value="15:00">3:00 PM</option>
+                        <option value="16:00">4:00 PM</option>
+                        <option value="17:00">5:00 PM</option>
+                        <option value="18:00">6:00 PM</option>
+                        <option value="19:00">7:00 PM</option>
+                        <option value="20:00">8:00 PM</option>
+                    </select>
+                    <span class="input-group-text"><i class="far fa-clock"></i></span>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="horaFin" class="form-label">Hora de fin</label>
+                <div class="input-group">
+                    <select class="form-select" id="horaFin">
+                        <option value="" disabled selected>Seleccione</option>
+                        <option value="9:00">9:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="13:00">1:00 PM</option>
+                        <option value="14:00">2:00 PM</option>
+                        <option value="15:00">3:00 PM</option>
+                        <option value="16:00">4:00 PM</option>
+                        <option value="17:00">5:00 PM</option>
+                        <option value="18:00">6:00 PM</option>
+                        <option value="19:00">7:00 PM</option>
+                        <option value="20:00">8:00 PM</option>
+                        <option value="21:00">9:00 PM</option>
+                        <option value="22:00">10:00 PM</option>
+                    </select>
+                    <span class="input-group-text"><i class="far fa-clock"></i></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Plantillas rápidas -->
+        <div class="mt-4">
+            <label class="form-label mb-2">Plantillas rápidas:</label>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary template-btn">Mañana (8AM-12PM)</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary template-btn">Tarde (12PM-6PM)</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary template-btn">Noche (6PM-10PM)</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary template-btn">Todo el día (8AM-8PM)</button>
+            </div>
+        </div>
+        
+        <!-- Visualización de horarios seleccionados -->
+        <div class="selected-schedule mt-4 p-3 bg-light rounded">
+            <h6 class="mb-3"><i class="fas fa-calendar-check me-2"></i>Horarios configurados:</h6>
+            <div class="schedule-items">
+                <div class="alert alert-info py-2 px-3 d-flex justify-content-between align-items-center mb-2">
+                    <span>Lunes a Viernes: 8:00 AM - 5:00 PM</span>
+                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="alert alert-info py-2 px-3 d-flex justify-content-between align-items-center mb-2">
+                    <span>Sábado: 9:00 AM - 2:00 PM</span>
+                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i></button>
+                </div>
+                <p class="text-muted small mb-0">* Puedes agregar múltiples horarios para diferentes días</p>
+            </div>
+            <button class="btn btn-sm btn-primary mt-2"><i class="fas fa-plus me-2"></i>Agregar otro horario</button>
+        </div>
+    </div>
+</div>
+            <div class="form-section">
+    <h4 class="section-title"><i class="fas fa-handshake"></i> Parámetros de Interacción</h4>
+    <div class="mb-3">
+        <label class="form-label mb-3">Configura tus preferencias de atención</label>
+        
+        <!-- Tarjetas de opciones principales -->
+       <div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="interaction-card h-100">
+            <input type="checkbox" class="btn-check" name="interactionType[]" id="publicOnly" autocomplete="off">
+            <label class="card h-100 interaction-option" for="publicOnly">
+                <div class="card-body text-center">
+                    <i class="fas fa-store interaction-icon"></i>
+                    <h5 class="card-title mt-3">Solo lugares públicos</h5>
+                    <p class="card-text text-muted">Atiendo exclusivamente en establecimientos públicos (cafés, bibliotecas, centros comerciales)</p>
+                </div>
+            </label>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="interaction-card h-100">
+            <input type="checkbox" class="btn-check" name="interactionType[]" id="publicAndHomes" autocomplete="off">
+            <label class="card h-100 interaction-option" for="publicAndHomes">
+                <div class="card-body text-center">
+                    <i class="fas fa-home interaction-icon"></i>
+                    <h5 class="card-title mt-3">Lugares públicos y domicilios</h5>
+                    <p class="card-text text-muted">Atiendo tanto en lugares públicos como en domicilios particulares</p>
+                </div>
+            </label>
+        </div>
+    </div>
+</div>
+
+        
+        <!-- Opciones adicionales -->
+        <div class="additional-options mb-4">
+            <h5 class="mb-3"><i class="fas fa-sliders-h me-2"></i>Preferencias adicionales</h5>
+            
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="noPrivateVehicles">
+                        <label class="form-check-label" for="noPrivateVehicles">No me subo a vehículos privados</label>
+                    </div>
+                    <small class="text-muted">No acepto traslados en automóviles particulares de clientes</small>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="otherParameters" class="form-label">Otros parámetros importantes</label>
+                        <textarea class="form-control" id="otherParameters" rows="3" placeholder="Ej: Solo atiendo grupos pequeños, Requiero espacio ventilado, etc."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Zona de seguridad -->
+        <div class="safety-zone p-4 rounded">
+            <div class="d-flex align-items-start">
+                <i class="fas fa-shield-alt fa-2x me-3 mt-1 text-primary"></i>
+                <div>
+                    <h5>Zona de Seguridad</h5>
+                    <p class="mb-2">Por tu protección, recomendamos siempre:</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Comunicarte primero a través de la plataforma</li>
+                        <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Compartir tu ubicación con un contacto de confianza</li>
+                        <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Verificar las calificaciones del cliente</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección: Preferencias de Interacción Personal -->
+<div class="form-section mt-5">
+    <h4 class="section-title"><i class="fas fa-user-friends"></i> Preferencias Personales de Interacción</h4>
+
+    <div class="mb-3">
+        <label class="form-label">Temas que prefiero evitar al conversar</label>
+        <textarea class="form-control" rows="2" placeholder="Ej: Religión, política, temas personales..."></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Temas que prefiero al conversar</label>
+        <textarea class="form-control" rows="2" placeholder="Ej: Libros, viajes, cine, tecnología..."></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Actividades que prefiero desarrollar o en las que tengo habilidades</label>
+        <textarea class="form-control" rows="2" placeholder="Ej: Juegos de mesa, hablar en público, cocinar..."></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Actividades que prefiero evitar</label>
+        <textarea class="form-control" rows="2" placeholder="Ej: Bailar, conducir, trabajos físicos pesados..."></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Otras recomendaciones para interactuar conmigo</label>
+        <textarea class="form-control" rows="2" placeholder="Ej: Prefiero lugares tranquilos, me gusta que me hablen con claridad..."></textarea>
+    </div>
+
+    <div class="mb-4">
+        <label class="form-label">Comparte lo que te gustaría que las personas conozcan de ti</label>
+        <textarea class="form-control" rows="2" placeholder="Ej: Soy amable, me gusta ayudar, me considero buena compañía..."></textarea>
+    </div>
+</div>
+<!-- Sección: ¿Cómo quieres vender minutos? -->
+<div class="form-section mt-5">
+    <h4 class="section-title"><i class="fas fa-user-clock"></i> ¿Cómo quieres vender minutos?</h4>
+    
+    <!-- Acompañando a personas -->
+    <div class="mb-4">
+        <h5 class="mb-3"><i class="fas fa-hands-helping me-2"></i>Acompañando a personas para:</h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="conversar">
+                    <label class="form-check-label" for="conversar">
+                        <i class="fas fa-comments option-icon"></i>
+                        <span>Conversar y/o escucharles</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="visitarLugares">
+                    <label class="form-check-label" for="visitarLugares">
+                        <i class="fas fa-map-marked-alt option-icon"></i>
+                        <span>Visitar lugares</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="eventos">
+                    <label class="form-check-label" for="eventos">
+                        <i class="fas fa-calendar-check option-icon"></i>
+                        <span>Asistir a eventos</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="deportes">
+                    <label class="form-check-label" for="deportes">
+                        <i class="fas fa-running option-icon"></i>
+                        <span>Hacer deportes</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="guiar">
+                    <label class="form-check-label" for="guiar">
+                        <i class="fas fa-map-signs option-icon"></i>
+                        <span>Guiar visitantes</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="hospitales">
+                    <label class="form-check-label" for="hospitales">
+                        <i class="fas fa-hospital option-icon"></i>
+                        <span>Visitar hospitales</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="atestiguar">
+                    <label class="form-check-label" for="atestiguar">
+                        <i class="fas fa-user-check option-icon"></i>
+                        <span>Atestiguar eventos</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="amistad">
+                    <label class="form-check-label" for="amistad">
+                        <i class="fas fa-heart option-icon"></i>
+                        <span>Brindar mi amistad</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ayudando a personas -->
+    <div class="mb-4">
+        <h5 class="mb-3"><i class="fas fa-hands me-2"></i>Ayudando a personas en:</h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="tramites">
+                    <label class="form-check-label" for="tramites">
+                        <i class="fas fa-file-signature option-icon"></i>
+                        <span>Hacer trámites</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="limpieza">
+                    <label class="form-check-label" for="limpieza">
+                        <i class="fas fa-broom option-icon"></i>
+                        <span>Limpieza</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="quehaceres">
+                    <label class="form-check-label" for="quehaceres">
+                        <i class="fas fa-home option-icon"></i>
+                        <span>Quehaceres</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="asesorias">
+                    <label class="form-check-label" for="asesorias">
+                        <i class="fas fa-chalkboard-teacher option-icon"></i>
+                        <span>Asesorías</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="apartar">
+                    <label class="form-check-label" for="apartar">
+                        <i class="fas fa-user-clock option-icon"></i>
+                        <span>Apartar lugar</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="reparaciones">
+                    <label class="form-check-label" for="reparaciones">
+                        <i class="fas fa-tools option-icon"></i>
+                        <span>Reparaciones</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="mudanza">
+                    <label class="form-check-label" for="mudanza">
+                        <i class="fas fa-boxes option-icon"></i>
+                        <span>Mudanzas</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="movilidad">
+                    <label class="form-check-label" for="movilidad">
+                        <i class="fas fa-wheelchair option-icon"></i>
+                        <span>Movilidad asistida</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-option">
+                    <input type="checkbox" class="form-check-input" id="otroApoyo">
+                    <label class="form-check-label" for="otroApoyo">
+                        <i class="fas fa-ellipsis-h option-icon"></i>
+                        <span>Otros apoyos</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Sección: Presentación Personal -->
+<div class="form-section mt-5">
+    <h4 class="section-title"><i class="fas fa-file-upload"></i> Presentación Personal</h4>
+    <p class="text-muted mb-3">Sube un archivo PDF o imágenes que sirvan como presentación personal o profesional. Esto ayudará a las personas a conocerte mejor.</p>
+
+    <div class="mb-3">
+        <label for="presentacionArchivo" class="form-label">Selecciona un archivo (PDF o imagen)</label>
+        <input class="form-control" type="file" id="presentacionArchivo" accept=".pdf,image/*">
+        <small class="form-text text-muted">Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10MB.</small>
+    </div>
+
+    <!-- Vista previa (solo para imágenes) -->
+    <div id="previewContainer" class="mt-3" style="display:none;">
+        <label class="form-label">Vista previa:</label>
+        <div id="previewContent" class="border rounded p-3 text-center">
+            <img id="previewImage" src="" alt="Vista previa" class="img-fluid" style="max-height: 300px;">
+        </div>
+    </div>
+</div>
+
+
+            <!-- Términos y Condiciones -->
+            <div class="form-section">
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="terminos" required>
+                    <label class="form-check-label" for="terminos">
+                        Acepto los <a href="#">Términos y Condiciones</a> y la <a href="#">Política de Privacidad</a>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Botón de Registro -->
+            <div class="d-grid">
+                <button class="btn btn-primary btn-lg" type="submit">Completar Registro Vender</button>
+            </div>
+        </div>
+        
+<div id="seccionComprarMinutos" class="form-section mt-4" style="display: none;">
+    
+    <h4 class="section-title text-center"><i class="fas fa-coins"></i> Comprar Minutos</h4>
+   <div class="form-section mt-5">
+   
+    <!-- Información Personal -->
+    <div class="mb-4">
+        <label for="infoPersonal" class="form-label"><strong>Comparte lo que te gustaría que las personas conozcan de ti:</strong></label>
+        <textarea class="form-control" id="infoPersonal" rows="3" placeholder="Ej: Me gusta la música, soy una persona tranquila, etc."></textarea>
+    </div>
+
+    <!-- ¿Para qué quisieras comprar minutos? -->
+    <div class="form-section">
+    <h4 class="section-title text-center"><i class="fas fa-coins"></i> Comprar Minutos</h4>
+    
+    <div class="mb-4">
+        <label for="infoPersonal" class="form-label"><i class="fas fa-user-edit me-2"></i>Comparte lo que te gustaría que las personas conozcan de ti:</label>
+        <textarea class="form-control" id="infoPersonal" rows="3" placeholder="Ej: Me gusta la música, soy una persona tranquila, etc."></textarea>
+    </div>
+
+    <div class="mb-4">
+        <h5 class="mb-3"><i class="fas fa-question-circle me-2"></i>¿Para qué quisieras comprar minutos?</h5>
+        
+        <!-- Acompañamiento -->
+        <div class="mb-4">
+            <h6 class="text-primary mb-3"><i class="fas fa-user-friends me-2"></i>Para que me acompañen a:</h6>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compConversar">
+                        <label class="form-check-label" for="compConversar">
+                            <i class="fas fa-comments option-icon"></i>
+                            <span>Conversar y/o escucharme</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compVisitar">
+                        <label class="form-check-label" for="compVisitar">
+                            <i class="fas fa-map-marked-alt option-icon"></i>
+                            <span>Visitar lugares</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compEventos">
+                        <label class="form-check-label" for="compEventos">
+                            <i class="fas fa-calendar-check option-icon"></i>
+                            <span>Asistir a eventos</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compDeportes">
+                        <label class="form-check-label" for="compDeportes">
+                            <i class="fas fa-running option-icon"></i>
+                            <span>Hacer deportes</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compGuiar">
+                        <label class="form-check-label" for="compGuiar">
+                            <i class="fas fa-map-signs option-icon"></i>
+                            <span>Guiarme en su localidad</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compHospitales">
+                        <label class="form-check-label" for="compHospitales">
+                            <i class="fas fa-hospital option-icon"></i>
+                            <span>Visitarme en hospitales</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compAmistad">
+                        <label class="form-check-label" for="compAmistad">
+                            <i class="fas fa-heart option-icon"></i>
+                            <span>Tener una amistad</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compTramites">
+                        <label class="form-check-label" for="compTramites">
+                            <i class="fas fa-file-signature option-icon"></i>
+                            <span>Hacer trámites o pagos</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Apoyo o Ayuda -->
+        <div class="mb-3">
+            <h6 class="text-primary mb-3"><i class="fas fa-hands-helping me-2"></i>Para que me ayuden a:</h6>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compLimpieza">
+                        <label class="form-check-label" for="compLimpieza">
+                            <i class="fas fa-broom option-icon"></i>
+                            <span>Limpieza en general</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compHogar">
+                        <label class="form-check-label" for="compHogar">
+                            <i class="fas fa-home option-icon"></i>
+                            <span>Quehaceres del hogar</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compAsesorias">
+                        <label class="form-check-label" for="compAsesorias">
+                            <i class="fas fa-chalkboard-teacher option-icon"></i>
+                            <span>Asesorías y tareas</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compFila">
+                        <label class="form-check-label" for="compFila">
+                            <i class="fas fa-user-clock option-icon"></i>
+                            <span>Apartar un lugar</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compTramites2">
+                        <label class="form-check-label" for="compTramites2">
+                            <i class="fas fa-file-alt option-icon"></i>
+                            <span>Hacer trámites</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compReparaciones">
+                        <label class="form-check-label" for="compReparaciones">
+                            <i class="fas fa-tools option-icon"></i>
+                            <span>Reparaciones del hogar</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compMudanza">
+                        <label class="form-check-label" for="compMudanza">
+                            <i class="fas fa-boxes option-icon"></i>
+                            <span>Mudarme de casa</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compMovilidad">
+                        <label class="form-check-label" for="compMovilidad">
+                            <i class="fas fa-wheelchair option-icon"></i>
+                            <span>Movilidad asistida</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compOtroApoyo">
+                        <label class="form-check-label" for="compOtroApoyo">
+                            <i class="fas fa-ellipsis-h option-icon"></i>
+                            <span>Otro apoyo</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="service-option">
+                        <input type="checkbox" class="form-check-input" id="compAtestiguar">
+                        <label class="form-check-label" for="compAtestiguar">
+                            <i class="fas fa-user-check option-icon"></i>
+                            <span>Atestiguar eventos</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="mb-4">
+    <h5 class="mb-3"><i class="fas fa-comments me-2"></i>Preferencias para conversar e interactuar</h5>
+    
+    <div class="mb-3">
+        <label for="temasPrefiero" class="form-label fw-semibold">Temas que prefiero al conversar:</label>
+        <textarea class="form-control" id="temasPrefiero" rows="3" placeholder="Escribe los temas que te gusta conversar..."></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label for="temasEvitar" class="form-label fw-semibold">Temas que prefiero evitar al conversar:</label>
+        <textarea class="form-control" id="temasEvitar" rows="3" placeholder="Escribe los temas que prefieres evitar..."></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label for="actividadesPrefiero" class="form-label fw-semibold">Actividades que prefiero desarrollar o en las que tengo habilidades:</label>
+        <textarea class="form-control" id="actividadesPrefiero" rows="3" placeholder="Escribe las actividades o habilidades..."></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label for="actividadesEvitar" class="form-label fw-semibold">Actividades que prefiero evitar:</label>
+        <textarea class="form-control" id="actividadesEvitar" rows="3" placeholder="Escribe las actividades que prefieres evitar..."></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label for="otrasRecomendaciones" class="form-label fw-semibold">Otras recomendaciones para interactuar conmigo:</label>
+        <textarea class="form-control" id="otrasRecomendaciones" rows="3" placeholder="Escribe alguna recomendación adicional..."></textarea>
+    </div>
+</div>
+
+    <div class="form-section">
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="terminos" required>
+                    <label class="form-check-label" for="terminos">
+                        Acepto los <a href="#">Términos y Condiciones</a> y la <a href="#">Política de Privacidad</a>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Botón de Registro -->
+            <div class="d-grid">
+                <button class="btn btn-primary btn-lg" type="submit">Completar Registro Comprar</button>
+            </div>
+</div>
+
+</div>
+    <div class="d-grid">
+             <button class="btn btn-primary btn-lg" type="button" onclick="window.location.href='menu.html'">
+    Guardar Registro Información
+</button>
+
+            </div>
+    </div>
+
+</div>
+</div>
+
+
+
+<style>
+    .service-option {
+        position: relative;
+        padding-left: 35px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .service-option:hover {
+        transform: translateY(-2px);
+    }
+    
+    .service-option .form-check-input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+    
+    .service-option .form-check-label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 12px 15px;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s;
+    }
+    
+    .service-option .form-check-input:checked ~ .form-check-label {
+        background-color: rgba(13, 110, 253, 0.1);
+        border-color: #0d6efd;
+    }
+    
+    .service-option .form-check-input:checked ~ .form-check-label::before {
+        content: "\f00c";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        left: -12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: white;
+        background-color: #0d6efd;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+    
+    .option-icon {
+        margin-right: 10px;
+        color: #6c757d;
+        width: 20px;
+        text-align: center;
+    }
+    
+    .service-option .form-check-input:checked ~ .form-check-label .option-icon {
+        color: #0d6efd;
+    }
+    
+    @media (max-width: 768px) {
+        .service-option .form-check-label {
+            padding: 10px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .option-icon {
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+    }
+    .interaction-option {
+        cursor: pointer;
+        border: 2px solid #dee2e6;
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .interaction-option:hover {
+        border-color: #adb5bd;
+        transform: translateY(-2px);
+    }
+    
+    .btn-check:checked + .interaction-option {
+        border-color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .btn-check:checked + .interaction-option .interaction-icon {
+        color: #0d6efd;
+    }
+    
+    .interaction-icon {
+        font-size: 2rem;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .safety-zone {
+        background-color: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .form-switch .form-check-input {
+        width: 2.5em;
+        height: 1.5em;
+    }
+    
+    @media (max-width: 768px) {
+        .interaction-icon {
+            font-size: 1.5rem;
+        }
+        
+        .interaction-option .card-title {
+            font-size: 1.1rem;
+        }
+    }
+    .day-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50% !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        padding: 0;
+    }
+    
+    .btn-check:checked + .day-btn {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .template-btn {
+        border-radius: 20px;
+    }
+    
+    .selected-schedule {
+        border: 1px solid #dee2e6;
+    }
+    
+    .schedule-items .alert {
+        border-radius: 5px;
+    }
+    
+    @media (max-width: 576px) {
+        .day-btn {
+            width: 35px;
+            height: 35px;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS (para el mapa) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Inicialización del mapa
+        document.addEventListener('DOMContentLoaded', function() {
+            // Coordenadas iniciales (Centro de la CDMX como ejemplo)
+            var map = L.map('map').setView([19.4326, -99.1332], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Marcador arrastrable
+            var marker = L.marker([19.4326, -99.1332], {
+                draggable: true
+            }).addTo(map);
+            
+            // Puedes agregar más lógica para manejar la ubicación aquí
+        });
+
+        document.querySelectorAll('.template-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const text = this.textContent;
+            if(text.includes('Mañana')) {
+                document.getElementById('horaInicio').value = '8:00';
+                document.getElementById('horaFin').value = '12:00';
+            } else if(text.includes('Tarde')) {
+                document.getElementById('horaInicio').value = '12:00';
+                document.getElementById('horaFin').value = '18:00';
+            } else if(text.includes('Noche')) {
+                document.getElementById('horaInicio').value = '18:00';
+                document.getElementById('horaFin').value = '22:00';
+            } else if(text.includes('Todo el día')) {
+                document.getElementById('horaInicio').value = '8:00';
+                document.getElementById('horaFin').value = '20:00';
+            }
+        });
+    });
+     document.addEventListener('DOMContentLoaded', function () {
+    const seccionVender = document.getElementById('seccionVenderMinutos');
+    const seccionComprar = document.getElementById('seccionComprarMinutos'); // <- nueva sección
+
+    const comprar = document.getElementById('comprarMinutos');
+    const vender = document.getElementById('venderMinutos');
+    const ambos = document.getElementById('ambosMinutos');
+
+    function actualizarVisibilidad() {
+        // Mostrar sección de vender si selecciona "vender" o "ambos"
+        if (vender.checked || ambos.checked) {
+            seccionVender.style.display = 'block';
+        } else {
+            seccionVender.style.display = 'none';
+        }
+
+        // Mostrar sección de comprar si selecciona "comprar" o "ambos"
+        if (comprar.checked || ambos.checked) {
+            seccionComprar.style.display = 'block';
+        } else {
+            seccionComprar.style.display = 'none';
+        }
+    }
+
+    // Escuchar cambios en los radios
+    [comprar, vender, ambos].forEach(radio => {
+        radio.addEventListener('change', actualizarVisibilidad);
+    });
+
+    // Ejecutar al cargar la página por si ya viene seleccionado
+    actualizarVisibilidad();
+});
+
+    </script>
+</body>
+</html>
