@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinutosApp - Ver Anuncio</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --top-navbar-height: 60px;
+        }
+        
+        body {
+            padding-top: var(--top-navbar-height);
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar Estilos (igual que en tu diseño) */
+            /* Sidebar Estilos */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1030;
+            transition: all 0.3s;
+            overflow-y: auto;
+        }
+        
+        .sidebar-collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+        
+        .sidebar-collapsed .nav-link-text,
+        .sidebar-collapsed .sidebar-brand-text,
+        .sidebar-collapsed .search-box {
+            display: none !important;
+        }
+        
+        .sidebar-collapsed .nav-link {
+            justify-content: center;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        .sidebar-collapsed + .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+        
+        /* Top Navbar */
+        .top-navbar {
+            height: var(--top-navbar-height);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 1020;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-collapsed + .main-content .top-navbar {
+            left: var(--sidebar-collapsed-width);
+        }
+        
+        /* Mobile Adaptations */
+        @media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 1040;
+        width: 280px !important; /* Fija el ancho cuando está abierto */
+    }
+    
+    .sidebar-mobile-show {
+        transform: translateX(0);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+    
+    .top-navbar {
+        left: 0 !important;
+    }
+    
+    .mobile-menu-btn {
+        display: block !important;
+    }
+    
+    /* Oculta el toggle normal en móvil */
+    #sidebarToggle {
+        display: none !important;
+    }
+}
+        
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        /* Top Navbar */
+        .top-navbar {
+            height: var(--top-navbar-height);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 1020;
+            transition: all 0.3s;
+        }
+        
+        /* Estilos específicos para la vista de anuncio */
+        .profile-header {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+        
+        .profile-header-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border: 4px solid white;
+            position: absolute;
+            bottom: -60px;
+            left: 30px;
+        }
+        
+        .service-card {
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .price-tag {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .rating-badge {
+            background-color: #FFD700;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #f8f9fa;
+            margin-right: 15px;
+        }
+        
+        .gallery-img {
+            height: 100px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .gallery-img:hover {
+            opacity: 0.8;
+        }
+        
+        .availability-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar bg-dark text-white d-flex flex-column p-3">
+        <!-- Brand & Toggle -->
+        <div class="sidebar-header d-flex justify-content-between align-items-center mb-3">
+            <a href="#" class="sidebar-brand text-white text-decoration-none d-flex align-items-center">
+                <i class="fas fa-clock me-3"></i>
+                <span class="sidebar-brand-text fs-4">MinutosApp</span>
+            </a>
+            <button class="btn btn-sm btn-outline-light d-none d-lg-inline-block" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu Button (solo visible en móvil) -->
+        <button class="btn btn-dark d-lg-none mb-3 mobile-menu-btn" id="mobileMenuButton">
+            <i class="fas fa-bars me-2"></i> Menú
+        </button>
+        
+        <!-- Search Bar -->
+        <div class="search-box mb-3">
+            <div class="input-group">
+                <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="Buscar...">
+                <button class="btn btn-outline-light" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        
+        <hr class="my-2">
+        
+        <!-- Main Menu -->
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white active">
+                    <i class="fas fa-home me-3"></i>
+                    <span class="nav-link-text">Inicio</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-shopping-cart me-3"></i>
+                    <span class="nav-link-text">Comprar Minutos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-hand-holding-usd me-3"></i>
+                    <span class="nav-link-text">Vender Minutos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-exchange-alt me-3"></i>
+                    <span class="nav-link-text">Transacciones</span>
+                </a>
+            </li>
+            
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-calendar-alt me-3"></i>
+                    <span class="nav-link-text">Agenda</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-chart-line me-3"></i>
+                    <span class="nav-link-text">Estadísticas</span>
+                </a>
+            </li>
+        </ul>
+        
+        <hr class="my-2">
+        
+        <!-- Configuración -->
+        <ul class="nav nav-pills flex-column">
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-cog me-3"></i>
+                    <span class="nav-link-text">Configuración</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-question-circle me-3"></i>
+                    <span class="nav-link-text">Ayuda</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Sidebar -->
+   
+        <!-- Page Content - Vista de Anuncio -->
+        <div class="container-fluid p-3 p-md-4">
+            <!-- Botón de regreso -->
+            <div class="mb-4">
+                <a href="#" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Volver a resultados
+                </a>
+            </div>
+            
+            <!-- Encabezado del perfil -->
+            <div class="profile-header mb-5 shadow">
+                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" class="profile-header-img" alt="Portada">
+                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="profile-avatar rounded-circle shadow" alt="Perfil">
+                <span class="availability-badge badge bg-success p-2">
+                    <i class="fas fa-check-circle me-1"></i> Disponible ahora
+                </span>
+            </div>
+            
+            <!-- Información principal -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Nombre y rating -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h1 class="mb-0">Ana López</h1>
+                        <div>
+                            <span class="badge rating-badge p-2">
+                                <i class="fas fa-star"></i> 4.8 (124)
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Ubicación y categoría -->
+                    <div class="d-flex align-items-center mb-4">
+                        <span class="text-muted me-3">
+                            <i class="fas fa-map-marker-alt text-danger me-1"></i> Colonia Centro, 2km de ti
+                        </span>
+                        <span class="badge bg-success me-3">Acompañamiento</span>
+                        <span class="text-muted">
+                            <i class="fas fa-clock me-1"></i> 50 transacciones
+                        </span>
+                    </div>
+                    
+                    <!-- Descripción -->
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h4 class="card-title">
+                                <i class="fas fa-info-circle text-primary me-2"></i>Descripción
+                            </h4>
+                            <p class="card-text">
+                                ¡Hola! Soy Ana, ofrezco compañía profesional para diversas situaciones. Tengo experiencia acompañando a personas a citas médicas, eventos sociales, reuniones familiares y paseos recreativos. 
+                                <br><br>
+                                Soy una persona paciente, amable y con excelentes habilidades sociales. Hablo inglés y español con fluidez, y tengo conocimientos básicos de lengua de señas. 
+                                <br><br>
+                                Mi objetivo es hacer que te sientas cómodo/a y acompañado/a en cualquier situación que requieras.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Servicios ofrecidos -->
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">
+                                <i class="fas fa-list-alt text-primary me-2"></i>Servicios que ofrezco
+                            </h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card service-card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="feature-icon text-primary">
+                                                    <i class="fas fa-heartbeat"></i>
+                                                </div>
+                                                <h5 class="mb-0">Acompañamiento médico</h5>
+                                            </div>
+                                            <p class="card-text text-muted">
+                                                Te acompaño a consultas, exámenes o procedimientos médicos, ayudando con papeleo y apoyo emocional.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card service-card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="feature-icon text-primary">
+                                                    <i class="fas fa-glass-cheers"></i>
+                                                </div>
+                                                <h5 class="mb-0">Eventos sociales</h5>
+                                            </div>
+                                            <p class="card-text text-muted">
+                                                Compañía para fiestas, reuniones familiares, cenas o cualquier evento donde necesites apoyo.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card service-card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="feature-icon text-primary">
+                                                    <i class="fas fa-walking"></i>
+                                                </div>
+                                                <h5 class="mb-0">Paseos recreativos</h5>
+                                            </div>
+                                            <p class="card-text text-muted">
+                                                Acompañamiento para caminatas, visitas a parques, museos o cualquier actividad al aire libre.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card service-card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="feature-icon text-primary">
+                                                    <i class="fas fa-shopping-bag"></i>
+                                                </div>
+                                                <h5 class="mb-0">Compras y recados</h5>
+                                            </div>
+                                            <p class="card-text text-muted">
+                                                Te ayudo con compras, recados o cualquier gestión que necesites realizar.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Galería -->
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">
+                                <i class="fas fa-images text-primary me-2"></i>Galería
+                            </h4>
+                            <div class="row g-2">
+                                <div class="col-4 col-md-3">
+                                    <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" class="img-fluid rounded gallery-img" alt="Galería 1">
+                                </div>
+                                <div class="col-4 col-md-3">
+                                    <img src="https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" class="img-fluid rounded gallery-img" alt="Galería 2">
+                                </div>
+                                <div class="col-4 col-md-3">
+                                    <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" class="img-fluid rounded gallery-img" alt="Galería 3">
+                                </div>
+                                <div class="col-4 col-md-3">
+                                    <img src="https://images.unsplash.com/photo-1540569014015-19a7be504e3a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" class="img-fluid rounded gallery-img" alt="Galería 4">
+                                </div>
+                                <div class="col-4 col-md-3">
+                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" class="img-fluid rounded gallery-img" alt="Galería 5">
+                                </div>
+                                <div class="col-4 col-md-3">
+                                    <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" class="img-fluid rounded gallery-img" alt="Galería 6">
+                                </div>
+                                <div class="col-4 col-md-3">
+                                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" class="img-fluid rounded gallery-img" alt="Galería 7">
+                                </div>
+                                <div class="col-4 col-md-3">
+                                    <div class="d-flex align-items-center justify-content-center bg-light rounded h-100">
+                                        <a href="#" class="text-muted text-decoration-none">
+                                            <i class="fas fa-plus me-1"></i> Ver más
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reseñas -->
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">
+                                <i class="fas fa-star text-primary me-2"></i>Reseñas (124)
+                            </h4>
+                            
+                            <div class="mb-4">
+                                <div class="d-flex mb-3">
+                                    <img src="https://randomuser.me/api/portraits/men/32.jpg" class="rounded-circle me-3" width="50" alt="Usuario">
+                                    <div>
+                                        <div class="d-flex justify-content-between">
+                                            <h6 class="mb-0">Carlos Mendoza</h6>
+                                            <small class="text-muted">Hace 2 semanas</small>
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="fas fa-star text-warning"></i>
+                                            <i class="fas fa-star text-warning"></i>
+                                            <i class="fas fa-star text-warning"></i>
+                                            <i class="fas fa-star text-warning"></i>
+                                            <i class="fas fa-star text-warning"></i>
+                                        </div>
+                                        <p class="mb-0">
+                                            Ana fue excelente acompañante para mi madre en su cita médica. Puntual, amable y muy profesional. ¡Totalmente recomendada!
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex mb-3">
+                                    <img src="https://randomuser.me/api/portraits/women/44.jpg" class="rounded-circle me-3" width="50" alt="Usuario">
+                                    <div>
+                                        <div class="d-flex justify-content-between">
+                                            <h6 class="mb-0">María González</h6>
+                                            <small class="text-muted">Hace 1 mes</small>
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="fas fa-star text-warning"></i>
+                                            <i class="fas fa-star text-warning"></i>
+                                            <i class="fas fa-star text-warning"></i>
+                                            <i class="fas fa-star text-warning"></i>
+                                            <i class="fas fa-star-half-alt text-warning"></i>
+                                        </div>
+                                        <p class="mb-0">
+                                            Excelente servicio. Ana me acompañó a una reunión familiar donde no conocía a nadie. Me hizo sentir muy cómoda y ayudó a romper el hielo con todos.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <a href="#" class="btn btn-outline-primary">Ver todas las reseñas</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar de reserva -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow sticky-top" style="top: 80px;">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">
+                                <i class="fas fa-clock text-primary me-2"></i>Reservar minutos
+                            </h4>
+                            
+                            <div class="mb-4">
+                                <h5 class="price-tag mb-3">$7.50 por minuto</h5>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Tarifa mínima:</span>
+                                    <strong>30 minutos ($225.00)</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Comisión:</span>
+                                    <strong>10% ($22.50)</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Total estimado:</span>
+                                    <strong>$247.50</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i>Seleccionar fecha
+                                </h5>
+                                <input type="date" class="form-control mb-3" value="2023-06-20">
+                                
+                                <h5 class="mb-3">
+                                    <i class="fas fa-clock text-primary me-2"></i>Seleccionar horario
+                                </h5>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-4">
+                                        <button class="btn btn-outline-primary w-100">09:00</button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button class="btn btn-outline-primary w-100">10:00</button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button class="btn btn-outline-primary w-100">11:00</button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button class="btn btn-outline-primary w-100">14:00</button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button class="btn btn-primary w-100">15:00</button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button class="btn btn-outline-primary w-100">16:00</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-list-alt text-primary me-2"></i>Tipo de servicio
+                                </h5>
+                                <select class="form-select mb-3">
+                                    <option selected>Acompañamiento médico</option>
+                                    <option>Evento social</option>
+                                    <option>Paseo recreativo</option>
+                                    <option>Compras/recados</option>
+                                    <option>Otro</option>
+                                </select>
+                                
+                                <div class="form-floating mb-3">
+                                    <textarea class="form-control" placeholder="Detalles" id="detailsTextarea" style="height: 100px"></textarea>
+                                    <label for="detailsTextarea">Detalles adicionales</label>
+                                </div>
+                            </div>
+                            
+                            <a href="vistachat.html" class="btn btn-primary btn-lg w-100 py-3">
+    <i class="fas fa-shopping-cart me-2"></i>Reservar ahora
+</a>
+
+                            
+                            <div class="text-center mt-3">
+                                <small class="text-muted">Al reservar aceptas los <a href="#">términos y condiciones</a></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+       document.addEventListener('DOMContentLoaded', function() {
+    // Toggle sidebar
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.toggle('sidebar-collapsed');
+    });
+    
+    // Mobile menu toggle
+    document.getElementById('mobileMenuButton').addEventListener('click', function(e) {
+        e.stopPropagation(); // Evita que el evento se propague
+        document.querySelector('.sidebar').classList.toggle('sidebar-mobile-show');
+    });
+    
+    // Cierra el menú al hacer clic fuera en móvil
+    document.addEventListener('click', function(event) {
+        const sidebar = document.querySelector('.sidebar');
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickOnMobileMenuButton = event.target === document.getElementById('mobileMenuButton') || 
+                                         document.getElementById('mobileMenuButton').contains(event.target);
+        
+        if (!isClickInsideSidebar && !isClickOnMobileMenuButton && window.innerWidth <= 992) {
+            sidebar.classList.remove('sidebar-mobile-show');
+        }
+    });
+});
+    </script>
+</body>
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinutosApp - Proceso de Pago</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --top-navbar-height: 60px;
+        }
+        
+        body {
+            padding-top: var(--top-navbar-height);
+            overflow-x: hidden;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1030;
+            transition: all 0.3s;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        .top-navbar {
+            height: var(--top-navbar-height);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 1020;
+            transition: all 0.3s;
+        }
+        
+        /* Estilos específicos para el proceso de pago */
+        .checkout-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .checkout-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #dee2e6;
+            z-index: 1;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #dee2e6;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            border: 3px solid white;
+        }
+        
+        .step.active .step-number {
+            background: #0d6efd;
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background: #198754;
+            color: white;
+        }
+        
+        .step-text {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #6c757d;
+            text-align: center;
+        }
+        
+        .step.active .step-text {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+        
+        .step.completed .step-text {
+            color: #198754;
+        }
+        
+        .payment-card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .payment-card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .payment-method {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .payment-method:hover {
+            border-color: #86b7fe;
+            background-color: #f8f9fa;
+        }
+        
+        .payment-method.selected {
+            border-color: #0d6efd;
+            background-color: #f0f7ff;
+        }
+        
+        .payment-method-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            color: #6c757d;
+        }
+        
+        .payment-method.selected .payment-method-icon {
+            color: #0d6efd;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .summary-total {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #0d6efd;
+        }
+        
+        .form-control.is-invalid {
+            background-image: none;
+            padding-right: 0.75rem;
+        }
+        
+        @media (max-width: 768px) {
+            .checkout-steps {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .step {
+                width: 33%;
+                margin-bottom: 1rem;
+            }
+            
+            .step-text {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar bg-dark text-white d-flex flex-column p-3">
+        <!-- Contenido del sidebar... -->
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <nav class="top-navbar navbar navbar-expand navbar-light bg-white shadow-sm">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-link text-dark d-lg-none me-2" id="mobileMenuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="navbar-brand mb-0 h6">Proceso de Pago</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content - Proceso de Pago -->
+        <div class="container-fluid p-3 p-md-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <!-- Pasos del proceso -->
+                    <div class="checkout-steps mb-5">
+                        <div class="step completed">
+                            <div class="step-number">1</div>
+                            <div class="step-text">Resumen</div>
+                        </div>
+                        <div class="step active">
+                            <div class="step-number">2</div>
+                            <div class="step-text">Método de Pago</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-text">Confirmación</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Columna izquierda - Métodos de pago -->
+                        <div class="col-lg-8">
+                            <div class="card payment-card">
+                                <div class="payment-card-header">
+                                    <i class="fas fa-credit-card me-2"></i>Selecciona método de pago
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="payment-method selected" onclick="selectPaymentMethod(this, 'card')">
+                                                <div class="payment-method-icon">
+                                                    <i class="far fa-credit-card"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">Tarjeta de crédito/débito</h6>
+                                                    <small class="text-muted">Pago seguro con cifrado</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="payment-method" onclick="selectPaymentMethod(this, 'paypal')">
+                                                <div class="payment-method-icon">
+                                                    <i class="fab fa-paypal"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">PayPal</h6>
+                                                    <small class="text-muted">Paga con tu cuenta PayPal</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="payment-method" onclick="selectPaymentMethod(this, 'transfer')">
+                                                <div class="payment-method-icon">
+                                                    <i class="fas fa-university"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">Transferencia bancaria</h6>
+                                                    <small class="text-muted">Pago directo desde tu banco</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="payment-method" onclick="selectPaymentMethod(this, 'wallet')">
+                                                <div class="payment-method-icon">
+                                                    <i class="fas fa-wallet"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">Pago en efectivo</h6>
+                                                    <small class="text-muted">Pagar al Tutor</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Formulario de tarjeta (visible cuando se selecciona) -->
+                                    <div id="cardPaymentForm" class="mt-4">
+                                        <h5 class="mb-3">Información de la tarjeta</h5>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <label for="cardNumber" class="form-label">Número de tarjeta</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" required>
+                                                    <span class="input-group-text"><i class="fab fa-cc-visa"></i> <i class="fab fa-cc-mastercard ms-2"></i></span>
+                                                </div>
+                                                <div class="invalid-feedback">Por favor ingresa un número de tarjeta válido</div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="cardName" class="form-label">Nombre en la tarjeta</label>
+                                                <input type="text" class="form-control" id="cardName" placeholder="Juan Pérez" required>
+                                                <div class="invalid-feedback">Por favor ingresa el nombre como aparece en la tarjeta</div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label for="cardExpiry" class="form-label">Expiración</label>
+                                                <input type="text" class="form-control" id="cardExpiry" placeholder="MM/AA" required>
+                                                <div class="invalid-feedback">Fecha inválida</div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label for="cardCvv" class="form-label">CVV</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="cardCvv" placeholder="123" required>
+                                                    <span class="input-group-text" data-bs-toggle="tooltip" title="Los 3 dígitos en el reverso de tu tarjeta">
+                                                        <i class="fas fa-question-circle"></i>
+                                                    </span>
+                                                </div>
+                                                <div class="invalid-feedback">Código de seguridad requerido</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-check mb-4">
+                                            <input class="form-check-input" type="checkbox" id="saveCard" checked>
+                                            <label class="form-check-label" for="saveCard">
+                                                Guardar esta tarjeta para futuros pagos
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Mensaje para otros métodos de pago -->
+                                    <div id="otherMethodMessage" class="alert alert-info mt-4 d-none">
+                                        Serás redirigido al proveedor de pago para completar la transacción de forma segura.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="veranuncio.html" class="btn btn-outline-secondary px-4">
+                                    <i class="fas fa-arrow-left me-2"></i>Regresar
+                                </a>
+                                <button id="continueBtn" class="btn btn-primary px-4" onclick="validateForm()">
+                                    Continuar <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Columna derecha - Resumen -->
+                        <div class="col-lg-4">
+                            <div class="card payment-card sticky-top" style="top: 100px;">
+                                <div class="payment-card-header">
+                                    <i class="fas fa-receipt me-2"></i>Resumen de la reserva
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" 
+                                             class="rounded-circle me-3" width="60" alt="Profesional">
+                                        <div>
+                                            <h6 class="mb-0">Ana López</h6>
+                                            <small class="text-muted">Acompañamiento profesional</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="mb-2">
+                                            <i class="far fa-calendar-alt me-2"></i>Fecha y hora
+                                        </h6>
+                                        <p class="mb-0">25 Junio 2023, 15:00 - 15:30</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="mb-2">
+                                            <i class="fas fa-map-marker-alt me-2"></i>Ubicación
+                                        </h6>
+                                        <p class="mb-0">Clínica Central, Colonia Centro</p>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <div class="mb-3">
+                                        <div class="summary-item">
+                                            <span>Tarifa base (30 min)</span>
+                                            <span>$225.00</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span>Comisión de servicio</span>
+                                            <span>$22.50</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span>Impuestos</span>
+                                            <span>$0.00</span>
+                                        </div>
+                                        <div class="summary-item summary-total">
+                                            <span>Total</span>
+                                            <span>$247.50</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-lock me-2"></i>Pago seguro cifrado con SSL
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Seleccionar método de pago
+        function selectPaymentMethod(element, method) {
+            // Remover selección de todos los métodos
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Añadir selección al método clickeado
+            element.classList.add('selected');
+            
+            // Mostrar el formulario correspondiente
+            if(method === 'card') {
+                document.getElementById('cardPaymentForm').style.display = 'block';
+                document.getElementById('otherMethodMessage').classList.add('d-none');
+            } else {
+                document.getElementById('cardPaymentForm').style.display = 'none';
+                document.getElementById('otherMethodMessage').classList.remove('d-none');
+            }
+        }
+        
+        // Validar formulario antes de continuar
+        function validateForm() {
+            let isValid = true;
+            const selectedMethod = document.querySelector('.payment-method.selected');
+            const method = selectedMethod ? selectedMethod.getAttribute('onclick').split("'")[1] : '';
+            
+            if(method === 'card') {
+                // Validar campos de tarjeta
+                const cardNumber = document.getElementById('cardNumber');
+                const cardName = document.getElementById('cardName');
+                const cardExpiry = document.getElementById('cardExpiry');
+                const cardCvv = document.getElementById('cardCvv');
+                
+                // Validar número de tarjeta (simplificado)
+                if(!cardNumber.value || cardNumber.value.replace(/\s/g, '').length < 16) {
+                    cardNumber.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    cardNumber.classList.remove('is-invalid');
+                }
+                
+                // Validar nombre
+                if(!cardName.value) {
+                    cardName.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    cardName.classList.remove('is-invalid');
+                }
+                
+                // Validar fecha (simplificado)
+                if(!cardExpiry.value || !cardExpiry.value.match(/^\d{2}\/\d{2}$/)) {
+                    cardExpiry.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    cardExpiry.classList.remove('is-invalid');
+                }
+                
+                // Validar CVV
+                if(!cardCvv.value || cardCvv.value.length < 3) {
+                    cardCvv.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    cardCvv.classList.remove('is-invalid');
+                }
+            }
+            
+            if(isValid) {
+                // Aquí iría la lógica para procesar el pago
+                // Por ahora simulamos redirección a la página de confirmación
+                window.location.href = "vistareserva.html";
+            } else {
+                // Mostrar mensaje de error si es necesario
+                alert('Por favor completa todos los campos requeridos correctamente.');
+            }
+        }
+        
+        // Inicializar tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Seleccionar tarjeta por defecto
+            selectPaymentMethod(document.querySelector('[onclick*="card"]'), 'card');
+        });
+    </script>
+</body>
+</html>

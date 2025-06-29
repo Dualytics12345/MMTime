@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinutosApp - Mi Agenda</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --top-navbar-height: 60px;
+        }
+        
+        body {
+            padding-top: var(--top-navbar-height);
+            overflow-x: hidden;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1030;
+            transition: all 0.3s;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        .top-navbar {
+            height: var(--top-navbar-height);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 1020;
+            transition: all 0.3s;
+        }
+        
+        /* Estilos específicos para la agenda */
+        .agenda-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .appointment-card {
+            border-radius: 10px;
+            border-left: 4px solid;
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        
+        .appointment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+        }
+        
+        .appointment-card.pending {
+            border-left-color: #ffc107;
+        }
+        
+        .appointment-card.confirmed {
+            border-left-color: #28a745;
+        }
+        
+        .appointment-card.completed {
+            border-left-color: #6c757d;
+        }
+        
+        .appointment-card.canceled {
+            border-left-color: #dc3545;
+        }
+        
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+        }
+        
+        .code-badge {
+            font-family: monospace;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+        }
+        
+        .calendar-container {
+            position: relative;
+        }
+        
+        .calendar-icon {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            pointer-events: none;
+            color: #6c757d;
+        }
+        
+        .datepicker {
+            border-radius: 10px !important;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+        
+        .datepicker table tr td.active.active {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+        
+        .nav-tabs .nav-link.active {
+            font-weight: 600;
+            border-bottom: 3px solid #0d6efd;
+        }
+        
+        .profile-img-sm {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        @media (max-width: 768px) {
+            .agenda-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .agenda-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar bg-dark text-white d-flex flex-column p-3">
+        <!-- Contenido del sidebar... -->
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <nav class="top-navbar navbar navbar-expand navbar-light bg-white shadow-sm">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-link text-dark d-lg-none me-2" id="mobileMenuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="navbar-brand mb-0 h6">Mi Agenda</span>
+                </div>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-bell"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-user-circle"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Page Content - Agenda -->
+        <div class="container-fluid p-3 p-md-4">
+            <!-- Header -->
+            <div class="agenda-header">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h2><i class="far fa-calendar-alt me-2"></i> Mi Agenda</h2>
+                        <p class="mb-0">Gestiona tus citas y reservas programadas</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-md-end agenda-actions">
+                            <div class="calendar-container me-2 flex-grow-1">
+                                <input type="text" class="form-control datepicker-input" placeholder="Seleccionar fecha">
+                                <i class="fas fa-calendar-alt calendar-icon"></i>
+                            </div>
+                            <button class="btn btn-light ms-2">
+                                <i class="fas fa-filter me-1"></i> Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pestañas de estado -->
+            <ul class="nav nav-tabs mb-4" id="agendaTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                        Todas
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                        Pendientes
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="confirmed-tab" data-bs-toggle="tab" data-bs-target="#confirmed" type="button" role="tab">
+                        Confirmadas
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">
+                        Completadas
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Contenido de pestañas -->
+            <div class="tab-content" id="agendaTabsContent">
+                <!-- Todas las citas -->
+                <div class="tab-pane fade show active" id="all" role="tabpanel">
+                    <div class="row">
+                        <!-- Cita 1 - Pendiente -->
+                        <div class="col-lg-6">
+                            <div class="card appointment-card pending">
+                                <div class="card-body position-relative">
+                                    <span class="badge bg-warning text-dark status-badge">Pendiente</span>
+                                    <div class="d-flex align-items-start mb-3">
+                                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" 
+                                             class="profile-img-sm me-3" alt="Ana López">
+                                        <div>
+                                            <h5 class="mb-1">Ana López</h5>
+                                            <p class="text-muted mb-2">Acompañamiento médico</p>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge bg-light text-dark code-badge">
+                                                    <i class="fas fa-sign-in-alt me-1"></i> Entrada: X7F9K2
+                                                </span>
+                                                <span class="badge bg-light text-dark code-badge">
+                                                    <i class="fas fa-sign-out-alt me-1"></i> Salida: P5M8R3
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="far fa-calendar text-muted me-1"></i>
+                                            <small>25 Jun 2023</small>
+                                            <i class="far fa-clock text-muted ms-3 me-1"></i>
+                                            <small>15:00 - 15:30</small>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Ver detalles</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Reagendar</a></li>
+                                                <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-times me-2"></i>Cancelar</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cita 2 - Confirmada -->
+                        <div class="col-lg-6">
+                            <div class="card appointment-card confirmed">
+                                <div class="card-body position-relative">
+                                    <span class="badge bg-success status-badge">Confirmada</span>
+                                    <div class="d-flex align-items-start mb-3">
+                                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" 
+                                             class="profile-img-sm me-3" alt="Carlos Ruiz">
+                                        <div>
+                                            <h5 class="mb-1">Carlos Ruiz</h5>
+                                            <p class="text-muted mb-2">Evento social</p>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge bg-light text-dark code-badge">
+                                                    <i class="fas fa-sign-in-alt me-1"></i> Entrada: K3J9L1
+                                                </span>
+                                                <span class="badge bg-light text-dark code-badge">
+                                                    <i class="fas fa-sign-out-alt me-1"></i> Salida: M8N2B4
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="far fa-calendar text-muted me-1"></i>
+                                            <small>26 Jun 2023</small>
+                                            <i class="far fa-clock text-muted ms-3 me-1"></i>
+                                            <small>18:00 - 20:00</small>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Ver detalles</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Reagendar</a></li>
+                                                <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-times me-2"></i>Cancelar</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cita 3 - Completada -->
+                        <div class="col-lg-6">
+                            <div class="card appointment-card completed">
+                                <div class="card-body position-relative">
+                                    <span class="badge bg-secondary status-badge">Completada</span>
+                                    <div class="d-flex align-items-start mb-3">
+                                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" 
+                                             class="profile-img-sm me-3" alt="María García">
+                                        <div>
+                                            <h5 class="mb-1">María García</h5>
+                                            <p class="text-muted mb-2">Paseo recreativo</p>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge bg-light text-dark code-badge">
+                                                    <i class="fas fa-sign-in-alt me-1"></i> Entrada: R2T5Y7
+                                                </span>
+                                                <span class="badge bg-light text-dark code-badge">
+                                                    <i class="fas fa-sign-out-alt me-1"></i> Salida: U8I9O0
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="far fa-calendar text-muted me-1"></i>
+                                            <small>20 Jun 2023</small>
+                                            <i class="far fa-clock text-muted ms-3 me-1"></i>
+                                            <small>10:00 - 11:30</small>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton3" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Ver detalles</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-star me-2"></i>Calificar</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-redo me-2"></i>Repetir reserva</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cita 4 - Cancelada -->
+                        <div class="col-lg-6">
+                            <div class="card appointment-card canceled">
+                                <div class="card-body position-relative">
+                                    <span class="badge bg-danger status-badge">Cancelada</span>
+                                    <div class="d-flex align-items-start mb-3">
+                                        <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" 
+                                             class="profile-img-sm me-3" alt="Juan Martínez">
+                                        <div>
+                                            <h5 class="mb-1">Juan Martínez</h5>
+                                            <p class="text-muted mb-2">Compras/recados</p>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge bg-light text-dark code-badge">
+                                                    <i class="fas fa-sign-in-alt me-1"></i> Entrada: Q1W3E5
+                                                </span>
+                                                <span class="badge bg-light text-dark code-badge">
+                                                    <i class="fas fa-sign-out-alt me-1"></i> Salida: Z7X9C2
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="far fa-calendar text-muted me-1"></i>
+                                            <small>18 Jun 2023</small>
+                                            <i class="far fa-clock text-muted ms-3 me-1"></i>
+                                            <small>12:00 - 13:00</small>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton4" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Ver detalles</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-redo me-2"></i>Nueva reserva</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Paginación -->
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Anterior</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Siguiente</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                
+                <!-- Otras pestañas (pendientes, confirmadas, completadas) -->
+                <div class="tab-pane fade" id="pending" role="tabpanel">
+                    <!-- Contenido similar adaptado para citas pendientes -->
+                </div>
+                <div class="tab-pane fade" id="confirmed" role="tabpanel">
+                    <!-- Contenido similar adaptado para citas confirmadas -->
+                </div>
+                <div class="tab-pane fade" id="completed" role="tabpanel">
+                    <!-- Contenido similar adaptado para citas completadas -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Datepicker JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.es.min.js"></script>
+    <script>
+        // Inicializar datepicker
+        $(document).ready(function(){
+            $('.datepicker-input').datepicker({
+                format: 'dd/mm/yyyy',
+                language: 'es',
+                autoclose: true,
+                todayHighlight: true
+            });
+        });
+        
+        // Filtrar citas por estado
+        function filterAppointments(status) {
+            // Implementar lógica de filtrado
+            console.log("Filtrando por:", status);
+        }
+        
+        // Inicializar tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    </script>
+</body>
+</html>

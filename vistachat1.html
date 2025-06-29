@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinutosApp - Iniciar Servicio</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    :root {
+        --sidebar-width: 280px;
+        --sidebar-collapsed-width: 80px;
+        --top-navbar-height: 60px;
+    }
+
+    body {
+        padding-top: var(--top-navbar-height);
+        overflow-x: hidden;
+        background-color: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .sidebar {
+        width: var(--sidebar-width);
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1030;
+        transition: all 0.3s;
+        overflow-y: auto;
+        background-color: #343a40;
+        color: white;
+        padding-top: var(--top-navbar-height);
+    }
+
+    .main-content {
+        margin-left: var(--sidebar-width);
+        transition: all 0.3s;
+        padding: 20px;
+    }
+
+    .top-navbar {
+        height: var(--top-navbar-height);
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: var(--sidebar-width);
+        z-index: 1020;
+        transition: all 0.3s;
+        background-color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .service-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .service-card {
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+        background-color: #fff;
+        margin-bottom: 20px;
+    }
+
+    .service-header {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        padding: 2rem 1rem 4rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .profile-img-lg {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid white;
+        position: absolute;
+        bottom: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        background-color: #fff;
+    }
+
+    .client-info-section {
+        margin-top: 60px;
+        padding: 0 20px;
+        text-align: center;
+    }
+
+    .code-input-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 2rem;
+    }
+
+    .code-input-group {
+        position: relative;
+    }
+
+    .code-input {
+        font-size: 1.5rem;
+        letter-spacing: 5px;
+        text-align: center;
+        padding: 1rem;
+        height: auto;
+    }
+
+    .code-label {
+        position: absolute;
+        top: -10px;
+        left: 20px;
+        background: white;
+        padding: 0 10px;
+        font-size: 0.9rem;
+        color: #6c757d;
+        z-index: 1;
+    }
+
+    .btn-verify {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 5px 10px;
+    }
+
+    .timer-display {
+        font-size: 2.5rem;
+        font-family: monospace;
+        text-align: center;
+        margin: 1rem 0;
+        color: #343a40;
+    }
+
+    .service-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 10px;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-completed {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 1.5rem;
+    }
+
+    .btn-lg-rounded {
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-lg-rounded:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .service-details {
+        padding: 1.5rem;
+        border-top: 1px solid #eee;
+        background-color: #f9f9f9;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed #ddd;
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .verification-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 500;
+    }
+
+    /* Sidebar styles */
+    .sidebar-brand {
+        padding: 1rem;
+        font-size: 1.2rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sidebar-nav {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar-nav-item {
+        padding: 0.5rem 1rem;
+    }
+
+    .sidebar-nav-link {
+        color: rgba(255,255,255,0.8);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s;
+    }
+
+    .sidebar-nav-link:hover {
+        color: white;
+    }
+
+    .sidebar-nav-link.active {
+        color: white;
+        background-color: rgba(255,255,255,0.1);
+        border-radius: 5px;
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            left: -100%;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+
+        .top-navbar {
+            left: 0;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-lg-rounded {
+            width: 100%;
+        }
+
+        .profile-img-lg {
+            width: 80px;
+            height: 80px;
+        }
+    }
+</style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar bg-dark text-white">
+        <div class="sidebar-brand">
+            <i class="fas fa-clock"></i>
+            <span>MinutosApp</span>
+        </div>
+        <ul class="sidebar-nav">
+            <li class="sidebar-nav-item">
+                <a href="#" class="sidebar-nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#" class="sidebar-nav-link active">
+                    <i class="fas fa-play-circle"></i>
+                    <span>Servicios</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#" class="sidebar-nav-link">
+                    <i class="fas fa-history"></i>
+                    <span>Historial</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#" class="sidebar-nav-link">
+                    <i class="fas fa-user"></i>
+                    <span>Perfil</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#" class="sidebar-nav-link">
+                    <i class="fas fa-cog"></i>
+                    <span>Ajustes</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <nav class="top-navbar navbar navbar-expand navbar-light shadow-sm">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-link text-dark d-lg-none me-2" id="mobileMenuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="navbar-brand mb-0 h6">Iniciar Servicio</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-question-circle"></i> Ayuda
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Contenido de Inicio de Servicio -->
+        <div class="container-fluid p-3">
+            <div class="service-container">
+                <div class="service-card">
+                    <!-- Encabezado -->
+                    <div class="service-header">
+                        <h4><i class="fas fa-user-clock me-2"></i>Iniciar Servicio</h4>
+                        <p class="mb-0">Verifica los códigos con tu cliente</p>
+                    </div>
+                    
+                    <!-- Foto de perfil -->
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" 
+                         class="profile-img-lg" alt="Carlos Mendoza">
+                    
+                    <!-- Información del cliente -->
+                    <div class="client-info-section">
+                        <h4>Carlos Mendoza</h4>
+                        <p class="text-muted">Acompañamiento médico</p>
+                        <div class="service-status status-pending" id="serviceStatus">
+                            <i class="fas fa-clock"></i>
+                            <span>Servicio no iniciado</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Entrada de códigos -->
+                    <div class="code-input-container">
+                        <!-- Código de entrada -->
+                        <div class="code-input-group">
+                            <label class="code-label">Código de Entrada</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control code-input" 
+                                       id="entryCode" value="X7F9K2" readonly>
+                                <button class="btn btn-success btn-verify" onclick="verifyCode('entry')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Código de salida -->
+                        <div class="code-input-group">
+                            <label class="code-label">Código de Salida</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control code-input" 
+                                       id="exitCode" value="P5M8R3" readonly>
+                                <button class="btn btn-outline-secondary btn-verify" 
+                                        id="exitVerifyBtn" disabled onclick="verifyCode('exit')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Temporizador (oculto inicialmente) -->
+                        <div class="text-center d-none" id="timerSection">
+                            <p class="mb-1">Tiempo transcurrido:</p>
+                            <div class="timer-display" id="serviceTimer">00:00:00</div>
+                            <p class="text-muted small">Tarifa: $7.50 por minuto</p>
+                        </div>
+                        
+                        <!-- Botones de acción -->
+                        <div class="action-buttons">
+                            <button class="btn btn-primary btn-lg-rounded flex-grow-1" 
+                                    id="startServiceBtn" onclick="startService()" disabled>
+                                <i class="fas fa-play me-2"></i>Iniciar Servicio
+                            </button>
+
+                            <button class="btn btn-danger btn-lg-rounded d-none" 
+                                    id="endServiceBtn" onclick="endService()">
+                                <i class="fas fa-stop me-2"></i>Finalizar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Detalles del servicio -->
+                    <div class="service-details">
+                        <h5><i class="fas fa-info-circle me-2"></i>Detalles del Servicio</h5>
+                        <div class="mt-3">
+                            <div class="detail-item">
+                                <span>Fecha:</span>
+                                <strong>Viernes, 30 Jun 2023</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Hora de inicio:</span>
+                                <strong id="startTimeText">--:-- --</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Duración estimada:</span>
+                                <strong>1 hora</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Lugar:</span>
+                                <strong>Clínica Central</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Verificación:</span>
+                                <span class="verification-badge text-danger" id="verificationStatus">
+                                    <i class="fas fa-times-circle"></i> No verificada
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Instrucciones -->
+                <div class="card border-0 shadow-sm mt-3">
+                    <div class="card-body">
+                        <h5><i class="fas fa-question-circle me-2"></i>¿Cómo iniciar el servicio?</h5>
+                        <ol class="mt-3">
+                            <li class="mb-2">Solicita al cliente su <strong>Código de Entrada</strong></li>
+                            <li class="mb-2">Verifica que coincida con el código mostrado</li>
+                            <li class="mb-2">Haz clic en <strong>Iniciar Servicio</strong></li>
+                            <li class="mb-2">Al finalizar, ingresa el <strong>Código de Salida</strong></li>
+                            <li>Confirma la finalización del servicio</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Confirmación de Finalización -->
+    <div class="modal fade" id="confirmEndModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-stopwatch me-2"></i>Finalizar Servicio
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                        <h4 class="mt-3">¿Finalizar servicio con Carlos Mendoza?</h4>
+                    </div>
+                    
+                    <div class="card bg-light p-3 mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Tiempo transcurrido:</small>
+                                <p class="mb-0 fw-bold" id="modalTimer">00:45:23</p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Total estimado:</small>
+                                <p class="mb-0 fw-bold">$340.43</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirmServiceCompleted" checked>
+                        <label class="form-check-label" for="confirmServiceCompleted">
+                            Confirmo que el servicio se completó satisfactoriamente
+                        </label>
+                    </div>
+                    
+                    <button class="btn btn-primary w-100 py-2" onclick="confirmServiceEnd()">
+                        <i class="fas fa-check-circle me-2"></i> Confirmar Finalización
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    let serviceStarted = false;
+    let entryCodeVerified = false;
+    let startTime = null;
+    let timerInterval = null;
+    const ratePerMinute = 7.50;
+
+    // Toggle sidebar on mobile
+    document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.toggle('active');
+    });
+
+    function verifyCode(type) {
+        if(type === 'entry') {
+            const clientCode = prompt("Por favor ingresa el Código de Entrada que te proporcionó el cliente:");
+            if(clientCode && clientCode.toUpperCase() === document.getElementById('entryCode').value) {
+                document.getElementById('verificationStatus').innerHTML = `
+                    <i class="fas fa-check-circle text-success"></i> Verificada
+                `;
+                document.getElementById('verificationStatus').className = 'verification-badge text-success';
+                alert("¡Código de entrada verificado correctamente! Ahora puedes iniciar el servicio.");
+                entryCodeVerified = true;
+                document.getElementById('startServiceBtn').disabled = false;
+            } else {
+                alert("El código no coincide. Por favor verifica nuevamente con el cliente.");
+            }
+        } else if(type === 'exit') {
+            const clientCode = prompt("Por favor ingresa el Código de Salida que te proporcionó el cliente:");
+            if(clientCode && clientCode.toUpperCase() === document.getElementById('exitCode').value) {
+                const modal = new bootstrap.Modal(document.getElementById('confirmEndModal'));
+                document.getElementById('modalTimer').textContent = document.getElementById('serviceTimer').textContent;
+
+                // Calcular total
+                const total = calculateTotal();
+                document.querySelector('#confirmEndModal .fw-bold:nth-child(2)').textContent = `$${total.toFixed(2)}`;
+
+                modal.show();
+            } else {
+                alert("El código de salida no coincide. Por favor verifica nuevamente.");
+            }
+        }
+    }
+
+    function startService() {
+        if (!entryCodeVerified) {
+            alert("Debes verificar primero el Código de Entrada.");
+            return;
+        }
+
+        if(!confirm("¿Estás seguro que deseas iniciar el servicio ahora?")) return;
+
+        serviceStarted = true;
+        startTime = new Date();
+
+        document.getElementById('serviceStatus').className = 'service-status status-active';
+        document.getElementById('serviceStatus').innerHTML = `
+            <i class="fas fa-play-circle"></i>
+            <span>Servicio en progreso</span>
+        `;
+
+        document.getElementById('startServiceBtn').classList.add('d-none');
+        document.getElementById('endServiceBtn').classList.remove('d-none');
+        document.getElementById('timerSection').classList.remove('d-none');
+        document.getElementById('exitVerifyBtn').disabled = false;
+        document.getElementById('exitVerifyBtn').className = 'btn btn-success btn-verify';
+
+        const options = { hour: '2-digit', minute: '2-digit' };
+        document.getElementById('startTimeText').textContent = startTime.toLocaleTimeString('es-ES', options);
+
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+        const now = new Date();
+        const elapsed = new Date(now - startTime);
+
+        const hours = elapsed.getUTCHours().toString().padStart(2, '0');
+        const minutes = elapsed.getUTCMinutes().toString().padStart(2, '0');
+        const seconds = elapsed.getUTCSeconds().toString().padStart(2, '0');
+
+        document.getElementById('serviceTimer').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    function calculateTotal() {
+        const now = new Date();
+        const elapsedMs = now - startTime;
+        const totalMinutes = Math.ceil(elapsedMs / 60000); // Redondea hacia arriba
+        return totalMinutes * ratePerMinute;
+    }
+
+    function endService() {
+        verifyCode('exit');
+    }
+
+    function confirmServiceEnd() {
+        clearInterval(timerInterval);
+
+        document.getElementById('serviceStatus').className = 'service-status status-completed';
+        document.getElementById('serviceStatus').innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            <span>Servicio completado</span>
+        `;
+
+        document.getElementById('endServiceBtn').classList.add('d-none');
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmEndModal'));
+        modal.hide();
+
+        alert("Servicio finalizado correctamente. El pago será procesado según el tiempo utilizado.");
+
+        // Si quieres redirigir después:
+        // window.location.href = "resumen-servicio.html";
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('startServiceBtn').disabled = true; // Deshabilitado al inicio
+    });
+</script>
+</body>
+</html>

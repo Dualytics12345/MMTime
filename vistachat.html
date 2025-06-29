@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinutosApp - Chat de Reserva</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --top-navbar-height: 60px;
+        }
+        
+        body {
+            padding-top: var(--top-navbar-height);
+            overflow-x: hidden;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1030;
+            transition: all 0.3s;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        .top-navbar {
+            height: var(--top-navbar-height);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 1020;
+            transition: all 0.3s;
+        }
+        
+        /* Estilos específicos para el chat */
+        .chat-container {
+            height: calc(100vh - var(--top-navbar-height) - 80px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            border-bottom: 1px solid #eee;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background-color: #f5f7fb;
+        }
+        
+        .chat-input-area {
+            border-top: 1px solid #eee;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 0 0 10px 10px;
+        }
+        
+        .message {
+            max-width: 70%;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .message-sent {
+            align-self: flex-end;
+            background-color: #d1e7dd;
+            border-radius: 15px 15px 0 15px;
+            padding: 10px 15px;
+        }
+        
+        .message-received {
+            align-self: flex-start;
+            background-color: white;
+            border-radius: 15px 15px 15px 0;
+            padding: 10px 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            color: #6c757d;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .reservation-card {
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            background-color: white;
+        }
+        
+        .reservation-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        
+        .payment-modal-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 15px 15px 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            width: fit-content;
+            margin-bottom: 1rem;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #6c757d;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        .chat-profile-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        @media (max-width: 768px) {
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar bg-dark text-white d-flex flex-column p-3">
+        <!-- Brand & Toggle -->
+        <div class="sidebar-header d-flex justify-content-between align-items-center mb-3">
+            <a href="#" class="sidebar-brand text-white text-decoration-none d-flex align-items-center">
+                <i class="fas fa-clock me-3"></i>
+                <span class="sidebar-brand-text fs-4">MinutosApp</span>
+            </a>
+            <button class="btn btn-sm btn-outline-light d-none d-lg-inline-block" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu Button (solo visible en móvil) -->
+        <button class="btn btn-dark d-lg-none mb-3 mobile-menu-btn" id="mobileMenuButton">
+            <i class="fas fa-bars me-2"></i> Menú
+        </button>
+        
+        <!-- Search Bar -->
+        <div class="search-box mb-3">
+            <div class="input-group">
+                <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="Buscar...">
+                <button class="btn btn-outline-light" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        
+        <hr class="my-2">
+        
+        <!-- Main Menu -->
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white active">
+                    <i class="fas fa-home me-3"></i>
+                    <span class="nav-link-text">Inicio</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-shopping-cart me-3"></i>
+                    <span class="nav-link-text">Comprar Minutos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-hand-holding-usd me-3"></i>
+                    <span class="nav-link-text">Vender Minutos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-exchange-alt me-3"></i>
+                    <span class="nav-link-text">Transacciones</span>
+                </a>
+            </li>
+            
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-calendar-alt me-3"></i>
+                    <span class="nav-link-text">Agenda</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-chart-line me-3"></i>
+                    <span class="nav-link-text">Estadísticas</span>
+                </a>
+            </li>
+        </ul>
+        
+        <hr class="my-2">
+        
+        <!-- Configuración -->
+        <ul class="nav nav-pills flex-column">
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-cog me-3"></i>
+                    <span class="nav-link-text">Configuración</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-question-circle me-3"></i>
+                    <span class="nav-link-text">Ayuda</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <nav class="top-navbar navbar navbar-expand navbar-light bg-white shadow-sm">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-link text-dark d-lg-none me-2" id="mobileMenuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="navbar-brand mb-0 h6">Chat de Reserva</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-success me-2">
+                        <i class="fas fa-circle"></i> En línea
+                    </span>
+                    <button class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content - Chat de Reserva -->
+        <div class="container-fluid p-0">
+            <div class="card border-0 shadow-none">
+                <!-- Header del chat -->
+                <div class="chat-header d-flex align-items-center">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" 
+                         class="chat-profile-img me-3" alt="Ana López">
+                    <div>
+                        <h5 class="mb-0">Ana López</h5>
+                        <small class="text-muted">Acompañamiento profesional</small>
+                    </div>
+                </div>
+                
+                <!-- Área de mensajes -->
+                <div class="chat-messages d-flex flex-column" id="chatMessages">
+                    <!-- Mensaje recibido -->
+                    <div class="message message-received">
+                        <div class="d-flex align-items-center mb-1">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" 
+                                 class="chat-profile-img me-2" width="30" alt="Ana López">
+                            <strong>Ana López</strong>
+                        </div>
+                        <p>¡Hola! ¿En qué puedo ayudarte hoy?</p>
+                        <div class="message-time">10:02 AM</div>
+                    </div>
+                    
+                    <!-- Mensaje enviado -->
+                    <div class="message message-sent">
+                        <p>Hola Ana, me gustaría reservar tu servicio de acompañamiento para una cita médica el próximo viernes.</p>
+                        <div class="message-time">10:03 AM</div>
+                    </div>
+                    
+                    <!-- Tarjeta de reserva propuesta -->
+                    <div class="message message-received">
+                        <div class="reservation-card">
+                            <h5><i class="far fa-calendar-check me-2"></i>Solicitud de Reserva</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Servicio:</strong> Acompañamiento médico</p>
+                                    <p class="mb-1"><strong>Duración:</strong> 45 minutos</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Fecha:</strong> Viernes, 30 Jun 2023</p>
+                                    <p class="mb-1"><strong>Hora:</strong> 10:00 AM</p>
+                                </div>
+                            </div>
+                            <div class="reservation-actions">
+                                <button class="btn btn-success flex-grow-1" onclick="acceptReservation()">
+                                    <i class="fas fa-check me-1"></i> Aceptar
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="declineReservation()">
+                                    <i class="fas fa-times me-1"></i> Rechazar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="message-time">10:05 AM</div>
+                    </div>
+                    
+                    <!-- Indicador de que está escribiendo -->
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    
+                    <!-- Mensaje de aceptación -->
+                    <div class="message message-received">
+                        <div class="d-flex align-items-center mb-1">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" 
+                                 class="chat-profile-img me-2" width="30" alt="Ana López">
+                            <strong>Ana López</strong>
+                        </div>
+                        <p>¡Perfecto! Acepto tu solicitud para el viernes 30 de junio a las 10:00 AM. Por favor completa el pago para confirmar la reserva.</p>
+                        <div class="message-time">10:06 AM</div>
+                    </div>
+                    
+                    <!-- Botón de pago -->
+                    <div class="message message-received">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                            <i class="fas fa-credit-card me-2"></i> Proceder al Pago
+                        </button>
+                        <div class="message-time">10:06 AM</div>
+                    </div>
+                </div>
+                
+                <!-- Área de entrada de mensajes -->
+                <div class="chat-input-area">
+                    <div class="input-group">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <input type="text" class="form-control" placeholder="Escribe un mensaje...">
+                        <button class="btn btn-primary" type="button">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Pago -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header payment-modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-credit-card me-2"></i>Confirmar Pago
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6 class="mb-3">Resumen de la Reserva</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Servicio:</span>
+                            <span>Acompañamiento médico (45 min)</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Fecha y hora:</span>
+                            <span>Vie, 30 Jun 2023 - 10:00 AM</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tarifa:</span>
+                            <span>$7.50/min × 45 min = $337.50</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Comisión:</span>
+                            <span>$33.75 (10%)</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Total:</span>
+                            <span>$371.25</span>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3">Método de Pago</h6>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" checked>
+                            <label class="form-check-label d-flex justify-content-between" for="creditCard">
+                                <span>
+                                    <i class="far fa-credit-card me-2"></i> Tarjeta de Crédito/Débito
+                                </span>
+                                <span class="badge bg-light text-dark">
+                                    **** **** **** 4242
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="paypal">
+                            <label class="form-check-label" for="paypal">
+                                <i class="fab fa-paypal me-2"></i> PayPal
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="wallet">
+                            <label class="form-check-label d-flex justify-content-between" for="wallet">
+                                <span>
+                                    <i class="fas fa-wallet me-2"></i> Billetera MinutosApp
+                                </span>
+                                <span class="text-success">$450.00 disponibles</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="termsCheck" checked>
+                        <label class="form-check-label" for="termsCheck">
+                            Acepto los <a href="#">términos y condiciones</a> y la <a href="#">política de cancelación</a>
+                        </label>
+                    </div>
+                    
+                    <button class="btn btn-primary w-100 py-2" onclick="completePayment()">
+                        <i class="fas fa-lock me-2"></i> Confirmar Pago de $371.25
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check-circle me-2"></i>¡Reserva Confirmada!
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="mb-3">Tu reserva con Ana López ha sido confirmada</h5>
+                    <p class="mb-4">
+                        Fecha: <strong>Viernes, 30 Jun 2023</strong><br>
+                        Hora: <strong>10:00 AM - 10:45 AM</strong><br>
+                        Lugar: <strong>Clínica Central</strong>
+                    </p>
+                    
+                    <div class="alert alert-info text-start">
+                        <h6><i class="fas fa-info-circle me-2"></i>Códigos de acceso:</h6>
+                        <p class="mb-1">Entrada: <strong class="text-primary">X7F9K2</strong></p>
+                        <p class="mb-0">Salida: <strong class="text-primary">P5M8R3</strong></p>
+                    </div>
+                    
+                    <button class="btn btn-primary mt-3" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i> Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Aceptar reserva
+        function acceptReservation() {
+            // Simular que el profesional está escribiendo
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            document.getElementById('chatMessages').appendChild(typingIndicator);
+            
+            // Simular demora de respuesta
+            setTimeout(() => {
+                // Remover indicador de escritura
+                typingIndicator.remove();
+                
+                // Agregar mensaje de aceptación
+                const acceptanceMsg = document.createElement('div');
+                acceptanceMsg.className = 'message message-received';
+                acceptanceMsg.innerHTML = `
+                    <div class="d-flex align-items-center mb-1">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" 
+                             class="chat-profile-img me-2" width="30" alt="Ana López">
+                        <strong>Ana López</strong>
+                    </div>
+                    <p>¡Perfecto! Acepto tu solicitud para el viernes 30 de junio a las 10:00 AM. Por favor completa el pago para confirmar la reserva.</p>
+                    <div class="message-time">${getCurrentTime()}</div>
+                `;
+                document.getElementById('chatMessages').appendChild(acceptanceMsg);
+                
+                // Agregar botón de pago
+                const paymentButton = document.createElement('div');
+                paymentButton.className = 'message message-received';
+                paymentButton.innerHTML = `
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                        <i class="fas fa-credit-card me-2"></i> Proceder al Pago
+                    </button>
+                    <div class="message-time">${getCurrentTime()}</div>
+                `;
+                document.getElementById('chatMessages').appendChild(paymentButton);
+                
+                // Hacer scroll al final
+                scrollToBottom();
+            }, 2000);
+        }
+        
+        // Rechazar reserva
+        function declineReservation() {
+            alert("Has rechazado la solicitud de reserva. Puedes proponer otra fecha/hora.");
+        }
+        
+        // Completar pago
+        function completePayment() {
+            // Cerrar modal de pago
+            const paymentModal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+            paymentModal.hide();
+            
+            // Mostrar modal de confirmación
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            confirmationModal.show();
+            
+            // Agregar mensaje de pago completado al chat
+            setTimeout(() => {
+                const paidMsg = document.createElement('div');
+                paidMsg.className = 'message message-sent';
+                paidMsg.innerHTML = `
+                    <p>He completado el pago. ¡Gracias!</p>
+                    <div class="message-time">${getCurrentTime()}</div>
+                `;
+                document.getElementById('chatMessages').appendChild(paidMsg);
+                scrollToBottom();
+            }, 1000);
+        }
+        
+        // Obtener hora actual formateada
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Hacer scroll al final del chat
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Inicializar tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            scrollToBottom();
+        });
+    </script>
+</body>
+</html>
