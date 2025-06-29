@@ -150,8 +150,93 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <nav class="sidebar bg-dark text-white d-flex flex-column p-3">
-        <!-- Contenido del sidebar... -->
+   <nav class="sidebar bg-dark text-white d-flex flex-column p-3">
+        <!-- Brand & Toggle -->
+        <div class="sidebar-header d-flex justify-content-between align-items-center mb-3">
+            <a href="#" class="sidebar-brand text-white text-decoration-none d-flex align-items-center">
+                <i class="fas fa-clock me-3"></i>
+                <span class="sidebar-brand-text fs-4">MinutosApp</span>
+            </a>
+            <button class="btn btn-sm btn-outline-light d-none d-lg-inline-block" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu Button (solo visible en móvil) -->
+        <button class="btn btn-dark d-lg-none mb-3 mobile-menu-btn" id="mobileMenuButton">
+            <i class="fas fa-bars me-2"></i> Menú
+        </button>
+        
+        <!-- Search Bar -->
+        <div class="search-box mb-3">
+            <div class="input-group">
+                <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="Buscar...">
+                <button class="btn btn-outline-light" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        
+        <hr class="my-2">
+        
+        <!-- Main Menu -->
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white active">
+                    <i class="fas fa-home me-3"></i>
+                    <span class="nav-link-text">Inicio</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-shopping-cart me-3"></i>
+                    <span class="nav-link-text">Comprar Minutos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-hand-holding-usd me-3"></i>
+                    <span class="nav-link-text">Vender Minutos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-exchange-alt me-3"></i>
+                    <span class="nav-link-text">Transacciones</span>
+                </a>
+            </li>
+            
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-calendar-alt me-3"></i>
+                    <span class="nav-link-text">Agenda</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-chart-line me-3"></i>
+                    <span class="nav-link-text">Estadísticas</span>
+                </a>
+            </li>
+        </ul>
+        
+        <hr class="my-2">
+        
+        <!-- Configuración -->
+        <ul class="nav nav-pills flex-column">
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-cog me-3"></i>
+                    <span class="nav-link-text">Configuración</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <i class="fas fa-question-circle me-3"></i>
+                    <span class="nav-link-text">Ayuda</span>
+                </a>
+            </li>
+        </ul>
     </nav>
 
     <!-- Main Content -->
